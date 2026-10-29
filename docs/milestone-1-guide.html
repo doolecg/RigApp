@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RigApp milestone 1 guide</title>
+<style>
+  :root { --ground: #f4f5f6; --surface: #ffffff; --raised: #e9ebee; --ink: #1b1d21; --soft: #5a606b; --accent: #0b6e5f; --warn: #a3471b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 17px/1.55 "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 8px; }
+  h2 { font-size: 1.5rem; margin: 64px 0 16px; }
+  h3 { font-size: 1.15rem; margin: 28px 0 8px; }
+  p { margin: 0 0 12px; }
+  .status { color: var(--warn); font-weight: 600; margin-bottom: 32px; }
+  .box { background: var(--surface); border-radius: 10px; padding: 20px 24px; margin: 16px 0; }
+  .first { background: var(--raised); }
+  .first ul { margin: 8px 0 0; padding-left: 20px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 10px; overflow: hidden; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 14px; }
+  th { background: var(--raised); }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  .ms-head { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+  .ms-head h3 { margin: 0; }
+  .state { color: var(--soft); font-weight: 600; }
+  .state.now { color: var(--accent); }
+  .state.done { color: var(--soft); text-decoration: line-through; }
+  ul.check { list-style: none; padding: 0; margin: 12px 0 0; }
+  ul.check li { padding: 4px 0 4px 30px; position: relative; }
+  ul.check li::before { content: ""; position: absolute; left: 0; top: 8px; width: 16px; height: 16px; border-radius: 4px; background: var(--raised); }
+  ul.check li.ticked::before { background: var(--accent); }
+  ul.check li.ticked { color: var(--soft); }
+  .why { color: var(--soft); font-size: 0.95rem; }
+  ol.pillars li { margin-bottom: 10px; }
+  .notes { margin-top: 16px; }
+  .notes label { display: block; font-size: 0.9rem; color: var(--soft); margin-bottom: 4px; }
+  .notes textarea { width: 100%; min-height: 64px; padding: 10px 12px; border: 0; border-radius: 8px; background: var(--ground); color: var(--ink); font: inherit; font-size: 0.95rem; resize: vertical; }
+  .notes textarea:focus { outline: 2px solid var(--accent); }
+  .bar { position: sticky; top: 0; z-index: 2; background: var(--ink); color: #fff; padding: 12px 24px; display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .bar span { font-size: 0.95rem; }
+  .bar button { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font: inherit; font-size: 0.95rem; cursor: pointer; }
+  .bar button.plain { background: transparent; color: #cfd3d9; }
+  nav { margin: 24px 0 0; color: var(--soft); font-size: 0.95rem; }
+  nav a { color: var(--accent); margin-right: 14px; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <span>Write in any notes box. Then press Copy my notes and paste them to Claude.</span>
+  <span><button class="plain" id="clear">Clear notes</button> <button id="copy">Copy my notes</button></span>
+</div>
+
+<main>
+<h1>Milestone 1 "Projects and threads"</h1>
+<p class="status">State: Planned (proposed 2026-10-29, not approved)</p>
+
+<div class="box first">
+  <strong>Read this first</strong>
+  <ul>
+    <li>Goal: Open RigApp, see every rig as a project with its seats as threads, talk to the lead and to any seat, answer approvals and see what needs you, all against a real rig in WSL.</li>
+    <li>Out of scope: Graph and terminal (M2), spec editing and lifecycle (M3), updater and packaging (M4), seat tools (M5).</li>
+    <li>Nothing here starts until you approve this guide.</li>
+    <li>To change anything, write in the notes box under it, press Copy my notes, and paste to Claude.</li>
+  </ul>
+</div>
+
+<h2>1. Parts</h2>
+<div class="box">
+  <ul class="check">
+    <li><strong>Monorepo:</strong> pnpm workspace with <code>apps/server</code>, <code>apps/web</code>, <code>apps/desktop</code> and a small <code>packages/contracts</code> for the message types. T3 Code layout.</li>
+    <li><strong>Daemon link:</strong> the server finds OpenRig (WSL on Windows, local on Linux, or a set address), checks <code>/healthz</code>, follows <code>/api/events</code> and <code>/api/activity/events</code>, and re-reads <code>/api/ps</code> and seat lists on each change.</li>
+    <li><strong>Setup screen:</strong> clear checks for WSL, tmux, the <code>rig</code> CLI and the daemon, with exact steps. Installs nothing.</li>
+    <li><strong>Layout:</strong> resizable sidebar (projects, pods, seats, search, New project), chat column, collapsible right panel (seat details, files).</li>
+    <li><strong>Chat:</strong> messages read from each seat's session file (Claude Code first, then Codex and Pi), collapsible tool cards, diffs, status dot per thread, unread markers.</li>
+    <li><strong>Approvals and interrupt:</strong> a card when a seat is waiting on a permission prompt, Approve and Deny, and Stop. Answers are sent as keys (stopgap, see systems.md gaps 2 and 3).</li>
+    <li><strong>Composer:</strong> multiline, Enter to send, Shift+Enter for a new line, <code>@seat</code> to direct a message, <code>/</code> rig commands. Sends through <code>/api/transport/send</code>.</li>
+    <li><strong>Overview:</strong> every seat that waits, errored, finished or is working, with one-click actions.</li>
+    <li><strong>Command palette:</strong> Ctrl+K for every action and every seat.</li>
+    <li><strong>Project kit and repo basics:</strong> LICENSE (MIT), README with Disclaimer and credits, Main Run and Dev Run configs.</li>
+    <li><strong>Tests:</strong> Vitest for the daemon client with recorded real responses; Playwright for open a project, open a thread, send a message, approve a prompt.</li>
+  </ul>
+  <div class="notes" data-key="parts"><label>Your notes on the parts</label><textarea></textarea></div>
+</div>
+
+<h2>2. Questions for doole</h2>
+<div class="box">
+  <ol>
+    <li>Approve the look in <code>mockups/rigapp-direction.html</code>? <span class="why">Claude recommends: yes; it follows your UI rules and T3 Code's layout.</span></li>
+    <li>Read seat session files for the chat (read-only, through <code>\\wsl$</code>)? <span class="why">Claude recommends: yes; OpenRig only gives raw pane text, which cannot show tool cards or diffs.</span></li>
+    <li>Turn on the daemon's terminal socket (<code>rig config set ui.enabled true</code>, then restart the daemon) so Approve, Deny and Stop are instant? <span class="why">Claude recommends: yes; without it RigApp falls back to <code>wsl.exe tmux send-keys</code>, which works but is slower.</span></li>
+    <li>Approve these packages: <code>ws</code>, <code>react-markdown</code> and <code>remark-gfm</code> (chat text), and the shadcn set (<code>radix-ui</code>, <code>class-variance-authority</code>, <code>clsx</code>, <code>tailwind-merge</code>, <code>lucide-react</code>, <code>cmdk</code>, <code>tw-animate-css</code>)? <span class="why">Claude recommends: yes; all MIT. No router, state or schema library: plain React state and hand-written checks keep it lean.</span></li>
+    <li>Which seat is the lead when OpenRig has none (kernel has <code>advisor.lead</code>; starter has <code>dev.build</code>)? <span class="why">Claude recommends: the rig's own <code>representative</code>, with a per-project override in its menu.</span></li>
+  </ol>
+  <div class="notes" data-key="questions"><label>Your notes on the questions (your answers)</label><textarea></textarea></div>
+</div>
+
+<h2>3. How to test each step</h2>
+<div class="box">
+  <h3 style="margin-top:0">Step: Setup screen</h3>
+  <ol>
+    <li>Run the Dev Run config in IntelliJ, or <code>pnpm dev</code> in <code>E:\REPOS\AI TOOLS\RigApp</code>.</li>
+    <li>Stop the daemon in Ubuntu with <code>rig daemon stop</code>: RigApp shows the setup screen with the daemon check failed.</li>
+    <li>Run <code>rig daemon start</code> and press Check again: the sidebar fills with kernel and starter.</li>
+  </ol>
+</div>
+
+<h2>4. Review checklist (about 30 minutes)</h2>
+<div class="box">
+  <ul class="check">
+    <li>kernel and starter show in the sidebar, seats grouped by pod, with the right harness labels.</li>
+    <li>Send a message to the lead: it arrives in the seat and its reply streams into the chat.</li>
+    <li>Make a seat ask for permission: the card appears in the thread and in Overview; Approve works.</li>
+    <li>Stop interrupts a working seat.</li>
+    <li>Ctrl+K finds any seat and any action.</li>
+    <li>Light theme and phone width (390) look right.</li>
+  </ul>
+  <div class="notes" data-key="review"><label>Your notes on the review</label><textarea></textarea></div>
+</div>
+</main>
+
+<script>
+  const KEY = "rigapp-milestone-1-notes";
+  const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+  const boxes = [...document.querySelectorAll(".notes")];
+  for (const box of boxes) {
+    const area = box.querySelector("textarea");
+    area.value = saved[box.dataset.key] || "";
+    area.addEventListener("input", () => {
+      saved[box.dataset.key] = area.value;
+      localStorage.setItem(KEY, JSON.stringify(saved));
+    });
+  }
+  document.getElementById("copy").addEventListener("click", async (e) => {
+    const lines = boxes
+      .filter((b) => b.querySelector("textarea").value.trim())
+      .map((b) => `[${b.querySelector("label").textContent.replace("Your notes on ", "")}]\n${b.querySelector("textarea").value.trim()}`);
+    const text = lines.length ? "Milestone 1 notes:\n\n" + lines.join("\n\n") : "Milestone 1 notes: none";
+    await navigator.clipboard.writeText(text);
+    e.target.textContent = "Copied";
+    setTimeout(() => (e.target.textContent = "Copy my notes"), 1500);
+  });
+  document.getElementById("clear").addEventListener("click", () => {
+    if (!confirm("Clear all your notes on this page?")) return;
+    localStorage.removeItem(KEY);
+    for (const b of boxes) b.querySelector("textarea").value = "";
+    for (const k in saved) delete saved[k];
+  });
+</script>
+</body>
+</html>

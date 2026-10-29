@@ -1,0 +1,9 @@
+.ref/
+node_modules/
+dist/
+build/
+release/
+.env
+*.log
+test-results/
+playwright-report/

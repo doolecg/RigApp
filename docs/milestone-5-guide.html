@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RigApp milestone 5 guide</title>
+<style>
+  :root { --ground: #f4f5f6; --surface: #ffffff; --raised: #e9ebee; --ink: #1b1d21; --soft: #5a606b; --accent: #0b6e5f; --warn: #a3471b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 17px/1.55 "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 8px; }
+  h2 { font-size: 1.5rem; margin: 64px 0 16px; }
+  h3 { font-size: 1.15rem; margin: 28px 0 8px; }
+  p { margin: 0 0 12px; }
+  .status { color: var(--warn); font-weight: 600; margin-bottom: 32px; }
+  .box { background: var(--surface); border-radius: 10px; padding: 20px 24px; margin: 16px 0; }
+  .first { background: var(--raised); }
+  .first ul { margin: 8px 0 0; padding-left: 20px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 10px; overflow: hidden; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 14px; }
+  th { background: var(--raised); }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  .ms-head { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+  .ms-head h3 { margin: 0; }
+  .state { color: var(--soft); font-weight: 600; }
+  .state.now { color: var(--accent); }
+  .state.done { color: var(--soft); text-decoration: line-through; }
+  ul.check { list-style: none; padding: 0; margin: 12px 0 0; }
+  ul.check li { padding: 4px 0 4px 30px; position: relative; }
+  ul.check li::before { content: ""; position: absolute; left: 0; top: 8px; width: 16px; height: 16px; border-radius: 4px; background: var(--raised); }
+  ul.check li.ticked::before { background: var(--accent); }
+  ul.check li.ticked { color: var(--soft); }
+  .why { color: var(--soft); font-size: 0.95rem; }
+  ol.pillars li { margin-bottom: 10px; }
+  .notes { margin-top: 16px; }
+  .notes label { display: block; font-size: 0.9rem; color: var(--soft); margin-bottom: 4px; }
+  .notes textarea { width: 100%; min-height: 64px; padding: 10px 12px; border: 0; border-radius: 8px; background: var(--ground); color: var(--ink); font: inherit; font-size: 0.95rem; resize: vertical; }
+  .notes textarea:focus { outline: 2px solid var(--accent); }
+  .bar { position: sticky; top: 0; z-index: 2; background: var(--ink); color: #fff; padding: 12px 24px; display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .bar span { font-size: 0.95rem; }
+  .bar button { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font: inherit; font-size: 0.95rem; cursor: pointer; }
+  .bar button.plain { background: transparent; color: #cfd3d9; }
+  nav { margin: 24px 0 0; color: var(--soft); font-size: 0.95rem; }
+  nav a { color: var(--accent); margin-right: 14px; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <span>Write in any notes box. Then press Copy my notes and paste them to Claude.</span>
+  <span><button class="plain" id="clear">Clear notes</button> <button id="copy">Copy my notes</button></span>
+</div>
+
+<main>
+<h1>Milestone 5 "Seat tools"</h1>
+<p class="status">State: Planned (proposed 2026-10-29, not approved)</p>
+
+<div class="box first">
+  <strong>Read this first</strong>
+  <ul>
+    <li>Goal: Give chosen pods Hindsight memory, CodeGraph and a browser, and let seats and Hindsight use local models, without adding tokens to seats that do not need them.</li>
+    <li>Out of scope: Anything that injects prompts into seats by default.</li>
+    <li>Nothing here starts until you approve this guide.</li>
+    <li>To change anything, write in the notes box under it, press Copy my notes, and paste to Claude.</li>
+  </ul>
+</div>
+
+<h2>1. Parts</h2>
+<div class="box">
+  <ul class="check">
+    <li><strong>Hindsight:</strong> detect the server, a Memory panel (search, knowledge pages), and the Hindsight MCP for pods you pick.</li>
+    <li><strong>CodeGraph:</strong> detect the CLI, a Code panel (explore a symbol, callers), and the CodeGraph MCP for pods you pick.</li>
+    <li><strong>Browser:</strong> Operant's browser brought over: an in-app browser tab seats can drive through <code>@playwright/mcp</code>, with Allow, Allow all, Deny, Take control and an action log; or a headless browser in WSL for background work.</li>
+    <li><strong>Local models:</strong> any OpenAI-compatible server (Ollama, LM Studio, llama.cpp) for Hindsight, and for Pi seats if OpenRig allows it.</li>
+    <li><strong>Token cost:</strong> each tool shows roughly what its tool list costs a seat per turn, and nothing is on until you turn it on.</li>
+  </ul>
+  <div class="notes" data-key="parts"><label>Your notes on the parts</label><textarea></textarea></div>
+</div>
+
+<h2>2. Questions for doole</h2>
+<div class="box">
+  <ol>
+    <li>Approve <code>@playwright/mcp</code> and <code>playwright-core</code>? <span class="why">Claude recommends: yes; Apache 2.0, the same ones Operant uses.</span></li>
+    <li>Turn on WSL mirrored networking so seats in WSL can reach the in-app browser? <span class="why">Claude recommends: yes, when you want the in-app browser; headless mode works without it.</span></li>
+  </ol>
+  <div class="notes" data-key="questions"><label>Your notes on the questions (your answers)</label><textarea></textarea></div>
+</div>
+
+<h2>3. How to test each step</h2>
+<div class="box">
+  <p class="why">Added as each step is built.</p>
+</div>
+
+<h2>4. Review checklist (about 30 minutes)</h2>
+<div class="box">
+  <ul class="check">
+    <li>Turn on Hindsight for one pod only; other seats' context does not grow.</li>
+    <li>A seat opens a page in the in-app browser and asks before clicking.</li>
+    <li>Hindsight works with a local model.</li>
+  </ul>
+  <div class="notes" data-key="review"><label>Your notes on the review</label><textarea></textarea></div>
+</div>
+</main>
+
+<script>
+  const KEY = "rigapp-milestone-5-notes";
+  const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+  const boxes = [...document.querySelectorAll(".notes")];
+  for (const box of boxes) {
+    const area = box.querySelector("textarea");
+    area.value = saved[box.dataset.key] || "";
+    area.addEventListener("input", () => {
+      saved[box.dataset.key] = area.value;
+      localStorage.setItem(KEY, JSON.stringify(saved));
+    });
+  }
+  document.getElementById("copy").addEventListener("click", async (e) => {
+    const lines = boxes
+      .filter((b) => b.querySelector("textarea").value.trim())
+      .map((b) => `[${b.querySelector("label").textContent.replace("Your notes on ", "")}]\n${b.querySelector("textarea").value.trim()}`);
+    const text = lines.length ? "Milestone 5 notes:\n\n" + lines.join("\n\n") : "Milestone 5 notes: none";
+    await navigator.clipboard.writeText(text);
+    e.target.textContent = "Copied";
+    setTimeout(() => (e.target.textContent = "Copy my notes"), 1500);
+  });
+  document.getElementById("clear").addEventListener("click", () => {
+    if (!confirm("Clear all your notes on this page?")) return;
+    localStorage.removeItem(KEY);
+    for (const b of boxes) b.querySelector("textarea").value = "";
+    for (const k in saved) delete saved[k];
+  });
+</script>
+</body>
+</html>

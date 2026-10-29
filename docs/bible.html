@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RigApp: the bible</title>
+<style>
+  :root { --ground: #f4f5f6; --surface: #ffffff; --raised: #e9ebee; --ink: #1b1d21; --soft: #5a606b; --accent: #0b6e5f; --warn: #a3471b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 17px/1.55 "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 8px; }
+  h2 { font-size: 1.5rem; margin: 64px 0 16px; }
+  h3 { font-size: 1.15rem; margin: 28px 0 8px; }
+  p { margin: 0 0 12px; }
+  .status { color: var(--warn); font-weight: 600; margin-bottom: 32px; }
+  .box { background: var(--surface); border-radius: 10px; padding: 20px 24px; margin: 16px 0; }
+  .first { background: var(--raised); }
+  .first ul { margin: 8px 0 0; padding-left: 20px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 10px; overflow: hidden; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 14px; }
+  th { background: var(--raised); }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  .ms-head { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+  .ms-head h3 { margin: 0; }
+  .state { color: var(--soft); font-weight: 600; }
+  .state.now { color: var(--accent); }
+  .state.done { color: var(--soft); text-decoration: line-through; }
+  ul.check { list-style: none; padding: 0; margin: 12px 0 0; }
+  ul.check li { padding: 4px 0 4px 30px; position: relative; }
+  ul.check li::before { content: ""; position: absolute; left: 0; top: 8px; width: 16px; height: 16px; border-radius: 4px; background: var(--raised); }
+  ul.check li.ticked::before { background: var(--accent); }
+  ul.check li.ticked { color: var(--soft); }
+  .why { color: var(--soft); font-size: 0.95rem; }
+  ol.pillars li { margin-bottom: 10px; }
+  .notes { margin-top: 16px; }
+  .notes label { display: block; font-size: 0.9rem; color: var(--soft); margin-bottom: 4px; }
+  .notes textarea { width: 100%; min-height: 64px; padding: 10px 12px; border: 0; border-radius: 8px; background: var(--ground); color: var(--ink); font: inherit; font-size: 0.95rem; resize: vertical; }
+  .notes textarea:focus { outline: 2px solid var(--accent); }
+  .bar { position: sticky; top: 0; z-index: 2; background: var(--ink); color: #fff; padding: 12px 24px; display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .bar span { font-size: 0.95rem; }
+  .bar button { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font: inherit; font-size: 0.95rem; cursor: pointer; }
+  .bar button.plain { background: transparent; color: #cfd3d9; }
+  nav { margin: 24px 0 0; color: var(--soft); font-size: 0.95rem; }
+  nav a { color: var(--accent); margin-right: 14px; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <span>Write in any notes box. Then press Copy my notes and paste them to Claude.</span>
+  <span><button class="plain" id="clear">Clear notes</button> <button id="copy">Copy my notes</button></span>
+</div>
+
+<main>
+<h1>RigApp: the bible</h1>
+<p class="status">Status: proposed 2026-10-29, not approved.</p>
+
+<div class="box first">
+  <strong>Read this first</strong>
+  <ul>
+    <li>This page is THE reference for the project. If another doc or memory disagrees, this wins; Claude fixes the other one.</li>
+    <li>Section 3 is what doole has settled. Claude does not reopen those unless asked.</li>
+    <li>Section 4 is the milestone order. Claude works only on the milestone marked in progress.</li>
+    <li>A new idea never goes into the milestone in progress. Section 6 says where it goes in section 7.</li>
+    <li>Every change to sections 3, 4 or 7 gets a line in section 8.</li>
+    <li>To change anything, write in the notes box under it, press Copy my notes, and paste to Claude. Notes stay in this browser until you clear them.</li>
+  </ul>
+  <nav>
+    <a href="#s1">1 What it is</a><a href="#s2">2 Pillars</a><a href="#s3">3 Settled</a><a href="#s4">4 Milestones</a><a href="#s5">5 How a milestone runs</a><a href="#s6">6 Where ideas go</a><a href="#s7">7 Idea map</a><a href="#s8">8 Change log</a>
+  </nav>
+</div>
+
+<h2 id="s1">1. What it is</h2>
+<div class="box">
+  <p>RigApp is a desktop and web app for running OpenRig rigs. A rig is a project, its seats are threads, and you talk to the rig through its lead seat, like a Claude Code Project. It looks and feels like T3 Code: projects and threads on the left, the chat in the middle, details on the right. It is for one person running several AI agents at once on Windows or Linux. It is not an agent runner of its own, it does not change OpenRig, and it is not a copy of Operant: it stays lean so seats use no more tokens than plain Claude Code.</p>
+  <div class="notes" data-key="s1"><label>Your notes on section 1</label><textarea></textarea></div>
+</div>
+
+<h2 id="s2">2. Pillars</h2>
+<p>Every feature must serve at least one.</p>
+<div class="box">
+  <ol class="pillars">
+    <li><strong>One place to run a rig.</strong> Everything you do to a rig or seat works from RigApp without a terminal. Example: rig up, snapshot and restore from the project menu.</li>
+    <li><strong>Shows what needs you.</strong> You see at once which seat waits, failed or finished, and act in one click. Example: Overview with Approve on the row.</li>
+    <li><strong>Lean on tokens.</strong> RigApp adds nothing to a seat unless you turn it on, and shows the cost when you do. Example: Hindsight on for one pod only.</li>
+    <li><strong>Honest about OpenRig.</strong> Every call is a real route; gaps are listed and filled with visible stopgaps, never fake data. Example: the setup screen says exactly what is missing.</li>
+  </ol>
+  <div class="notes" data-key="s2"><label>Your notes on the pillars</label><textarea></textarea></div>
+</div>
+
+<h2 id="s3">3. Settled decisions</h2>
+<table>
+  <tr><th>Date</th><th>Decision</th><th>Why</th></tr>
+  <tr><td>2026-10-29</td><td>Project = rig, thread = seat, each project has a lead seat.</td><td>The prompt; matches Claude Code Projects.</td></tr>
+  <tr><td>2026-10-29</td><td>TypeScript pnpm monorepo: server, web, desktop, laid out like T3 Code.</td><td>The prompt.</td></tr>
+  <tr><td>2026-10-29</td><td>Only RigApp's server calls OpenRig; the UI talks to the server.</td><td>The daemon refuses requests with an Origin header. See design.md.</td></tr>
+  <tr><td>2026-10-29</td><td>Runs natively on Windows and Linux; the daemon runs in WSL2 on Windows. RigApp never patches OpenRig.</td><td>doole, 2026-10-29. See design.md.</td></tr>
+  <tr><td>2026-10-29</td><td>Never invent an endpoint; gaps go in systems.md and use the CLI meanwhile.</td><td>The prompt.</td></tr>
+  <tr><td>2026-10-29</td><td>Lean on tokens: nothing added to seats by default; seat tools opt-in per pod.</td><td>doole: Operant got bloated. See design.md.</td></tr>
+  <tr><td>2026-10-29</td><td>T3 Code is the model; from Operant only the browser, updater, xterm setup and spawn helper.</td><td>doole, 2026-10-29.</td></tr>
+  <tr><td>2026-10-29</td><td>Hindsight and CodeGraph wired in with panels; local models for seats and Hindsight; all in M5.</td><td>doole, 2026-10-29.</td></tr>
+  <tr><td>2026-10-29</td><td>Browser for seats: Operant's in-app browser or a headless one, in M5.</td><td>doole, 2026-10-29.</td></tr>
+  <tr><td>2026-10-29</td><td>Do all five suggestions: Operant reuse, OpenRig pull requests, usage view, snapshot timeline, search.</td><td>doole, 2026-10-29.</td></tr>
+</table>
+<div class="box">
+  <p><strong>Waiting for doole's yes</strong> (not settled yet):</p>
+  <ul>
+    <li>The look in <code>mockups/rigapp-direction.html</code>.</li>
+    <li>Chat built from seat session files (read-only).</li>
+    <li>Daemon terminal socket turned on for approvals and Stop.</li>
+    <li>Specs saved by export, edit, re-import.</li>
+  </ul>
+  <div class="notes" data-key="s3"><label>Your notes on settled decisions</label><textarea></textarea></div>
+</div>
+
+<h2 id="s4">4. Milestone map</h2>
+<p>Trunk before branches: M1 is a working skeleton of the whole loop (see projects, talk, approve), then each milestone adds depth. A usefulness review sits after M1. Ticked items are built and checked in the running app.</p>
+
+<div class="box">
+  <div class="ms-head"><h3>Milestone 1 "Projects and threads"</h3><span class="state">Planned</span></div>
+  <p class="why">Guide: <code>docs/milestone-1-guide.html</code></p>
+  <ul class="check">
+    <li>Monorepo</li>
+    <li>Daemon link</li>
+    <li>Setup screen</li>
+    <li>Layout</li>
+    <li>Chat</li>
+    <li>Approvals and interrupt</li>
+    <li>Composer</li>
+    <li>Overview</li>
+    <li>Command palette</li>
+    <li>Project kit and repo basics</li>
+    <li>Tests</li>
+  </ul>
+  <div class="notes" data-key="m1"><label>Your notes on milestone 1</label><textarea></textarea></div>
+</div>
+
+<div class="box">
+  <div class="ms-head"><h3>Milestone 2 "Graph and terminal"</h3><span class="state">Planned</span></div>
+  <p class="why">Guide: <code>docs/milestone-2-guide.html</code></p>
+  <ul class="check">
+    <li>Graph tab</li>
+    <li>Terminal tab</li>
+    <li>Take control</li>
+    <li>From Operant</li>
+    <li>Tests</li>
+  </ul>
+  <div class="notes" data-key="m2"><label>Your notes on milestone 2</label><textarea></textarea></div>
+</div>
+
+<div class="box">
+  <div class="ms-head"><h3>Milestone 3 "Specs and lifecycle"</h3><span class="state">Planned</span></div>
+  <p class="why">Guide: <code>docs/milestone-3-guide.html</code></p>
+  <ul class="check">
+    <li>Spec editor</li>
+    <li>Lifecycle</li>
+    <li>Snapshot timeline</li>
+    <li>Usage</li>
+    <li>Search</li>
+  </ul>
+  <div class="notes" data-key="m3"><label>Your notes on milestone 3</label><textarea></textarea></div>
+</div>
+
+<div class="box">
+  <div class="ms-head"><h3>Milestone 4 "Desktop and release"</h3><span class="state">Planned</span></div>
+  <p class="why">Guide: <code>docs/milestone-4-guide.html</code></p>
+  <ul class="check">
+    <li>Auto-update</li>
+    <li>Settings</li>
+    <li>Packages</li>
+    <li>Release</li>
+  </ul>
+  <div class="notes" data-key="m4"><label>Your notes on milestone 4</label><textarea></textarea></div>
+</div>
+
+<div class="box">
+  <div class="ms-head"><h3>Milestone 5 "Seat tools"</h3><span class="state">Planned</span></div>
+  <p class="why">Guide: <code>docs/milestone-5-guide.html</code></p>
+  <ul class="check">
+    <li>Hindsight</li>
+    <li>CodeGraph</li>
+    <li>Browser</li>
+    <li>Local models</li>
+    <li>Token cost</li>
+  </ul>
+  <div class="notes" data-key="m5"><label>Your notes on milestone 5</label><textarea></textarea></div>
+</div>
+
+<h2 id="s5">5. How a milestone runs</h2>
+<div class="box">
+  <ol>
+    <li>Start: Claude writes <code>docs/milestone-N-guide.html</code> (goal, parts, out of scope) and asks doole every question it needs in one bundle.</li>
+    <li>doole approves the guide. Claude marks it "In progress: approved" with the date here and in <code>CLAUDE.md</code>.</li>
+    <li>Claude builds in small steps. After each step, its test steps go in the guide.</li>
+    <li>End: one review checklist in the guide for doole (about 30 minutes). Fixes from it jump the queue.</li>
+    <li>Close: Claude marks it done here and in <code>CLAUDE.md</code>, ticks its items in section 4, updates <code>docs/systems.md</code>, records decisions in section 3 and <code>docs/design.md</code>, and adds a line to section 8. Then reports the path to run the app, what was verified and what was not, screenshots, and any OpenRig gaps found.</li>
+  </ol>
+  <div class="notes" data-key="s5"><label>Your notes on how a milestone runs</label><textarea></textarea></div>
+</div>
+
+<h2 id="s6">6. Where ideas go</h2>
+<div class="box">
+  <ul>
+    <li>Fits a planned milestone: add it to that milestone in section 7.</li>
+    <li>Needs something not built yet: park it under the milestone that builds that thing.</li>
+    <li>Serves no pillar: park it under "Maybe never" with one line on why.</li>
+    <li>Changes a settled decision: ask doole; it is not decided until they say so.</li>
+    <li>Never slip it into the milestone in progress, however small.</li>
+  </ul>
+</div>
+
+<h2 id="s7">7. Idea map</h2>
+<div class="box">
+  <h3 style="margin-top:0">Side job (no milestone)</h3>
+  <ul>
+    <li>Pull requests to OpenRig for the missing routes: approvals, interrupt, spec update, structured messages. Opened only after doole OKs each one, once M1 shows which stopgaps hurt most. (from Claude, 2026-10-29)</li>
+  </ul>
+  <h3>After M4</h3>
+  <ul>
+    <li>Phone access to the same server (the layout already works at 390 px). (from the prompt, 2026-10-29)</li>
+  </ul>
+  <h3>Maybe never</h3>
+  <ul>
+    <li>Running the OpenRig daemon natively on Windows (via psmux): changes OpenRig itself, which RigApp does not do.</li>
+    <li>Operant's Orchestrator Mode, learning and helper system: the lead seat already does this through OpenRig, and it costs tokens.</li>
+  </ul>
+  <div class="notes" data-key="s7"><label>Your notes on the idea map (move things, add ideas)</label><textarea></textarea></div>
+</div>
+
+<h2 id="s8">8. Change log</h2>
+<div class="box">
+  <ul>
+    <li>2026-10-29: page created from the build prompt, doole's answers (Windows and Linux, seat tools in M5, browser, all five suggestions, lean not Operant) and the source study.</li>
+  </ul>
+</div>
+</main>
+
+<script>
+  const KEY = "rigapp-bible-notes";
+  const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+  const boxes = [...document.querySelectorAll(".notes")];
+  for (const box of boxes) {
+    const area = box.querySelector("textarea");
+    area.value = saved[box.dataset.key] || "";
+    area.addEventListener("input", () => {
+      saved[box.dataset.key] = area.value;
+      localStorage.setItem(KEY, JSON.stringify(saved));
+    });
+  }
+  document.getElementById("copy").addEventListener("click", async (e) => {
+    const lines = boxes
+      .filter((b) => b.querySelector("textarea").value.trim())
+      .map((b) => `[${b.querySelector("label").textContent.replace("Your notes on ", "")}]\n${b.querySelector("textarea").value.trim()}`);
+    const text = lines.length ? "Bible notes:\n\n" + lines.join("\n\n") : "Bible notes: none";
+    await navigator.clipboard.writeText(text);
+    e.target.textContent = "Copied";
+    setTimeout(() => (e.target.textContent = "Copy my notes"), 1500);
+  });
+  document.getElementById("clear").addEventListener("click", () => {
+    if (!confirm("Clear all your notes on this page?")) return;
+    localStorage.removeItem(KEY);
+    for (const b of boxes) b.querySelector("textarea").value = "";
+    for (const k in saved) delete saved[k];
+  });
+</script>
+</body>
+</html>

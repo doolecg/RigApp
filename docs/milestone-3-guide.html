@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RigApp milestone 3 guide</title>
+<style>
+  :root { --ground: #f4f5f6; --surface: #ffffff; --raised: #e9ebee; --ink: #1b1d21; --soft: #5a606b; --accent: #0b6e5f; --warn: #a3471b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 17px/1.55 "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 2.4rem; line-height: 1.15; margin: 0 0 8px; }
+  h2 { font-size: 1.5rem; margin: 64px 0 16px; }
+  h3 { font-size: 1.15rem; margin: 28px 0 8px; }
+  p { margin: 0 0 12px; }
+  .status { color: var(--warn); font-weight: 600; margin-bottom: 32px; }
+  .box { background: var(--surface); border-radius: 10px; padding: 20px 24px; margin: 16px 0; }
+  .first { background: var(--raised); }
+  .first ul { margin: 8px 0 0; padding-left: 20px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 10px; overflow: hidden; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 14px; }
+  th { background: var(--raised); }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  .ms-head { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+  .ms-head h3 { margin: 0; }
+  .state { color: var(--soft); font-weight: 600; }
+  .state.now { color: var(--accent); }
+  .state.done { color: var(--soft); text-decoration: line-through; }
+  ul.check { list-style: none; padding: 0; margin: 12px 0 0; }
+  ul.check li { padding: 4px 0 4px 30px; position: relative; }
+  ul.check li::before { content: ""; position: absolute; left: 0; top: 8px; width: 16px; height: 16px; border-radius: 4px; background: var(--raised); }
+  ul.check li.ticked::before { background: var(--accent); }
+  ul.check li.ticked { color: var(--soft); }
+  .why { color: var(--soft); font-size: 0.95rem; }
+  ol.pillars li { margin-bottom: 10px; }
+  .notes { margin-top: 16px; }
+  .notes label { display: block; font-size: 0.9rem; color: var(--soft); margin-bottom: 4px; }
+  .notes textarea { width: 100%; min-height: 64px; padding: 10px 12px; border: 0; border-radius: 8px; background: var(--ground); color: var(--ink); font: inherit; font-size: 0.95rem; resize: vertical; }
+  .notes textarea:focus { outline: 2px solid var(--accent); }
+  .bar { position: sticky; top: 0; z-index: 2; background: var(--ink); color: #fff; padding: 12px 24px; display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .bar span { font-size: 0.95rem; }
+  .bar button { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font: inherit; font-size: 0.95rem; cursor: pointer; }
+  .bar button.plain { background: transparent; color: #cfd3d9; }
+  nav { margin: 24px 0 0; color: var(--soft); font-size: 0.95rem; }
+  nav a { color: var(--accent); margin-right: 14px; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <span>Write in any notes box. Then press Copy my notes and paste them to Claude.</span>
+  <span><button class="plain" id="clear">Clear notes</button> <button id="copy">Copy my notes</button></span>
+</div>
+
+<main>
+<h1>Milestone 3 "Specs and lifecycle"</h1>
+<p class="status">State: Planned (proposed 2026-10-29, not approved)</p>
+
+<div class="box first">
+  <strong>Read this first</strong>
+  <ul>
+    <li>Goal: Create and edit rigs from RigApp and control their whole life: up, down, snapshots, restore, adopt, bundles.</li>
+    <li>Out of scope: Seat tools (M5).</li>
+    <li>Nothing here starts until you approve this guide.</li>
+    <li>To change anything, write in the notes box under it, press Copy my notes, and paste to Claude.</li>
+  </ul>
+</div>
+
+<h2>1. Parts</h2>
+<div class="box">
+  <ul class="check">
+    <li><strong>Spec editor:</strong> RigSpec, AgentSpec and CULTURE.md with validation by OpenRig's own validators (<code>/api/rigs/import/validate</code>, <code>/api/agents/validate</code>) and a diff before saving. Saves by export, edit, re-import (stopgap, gap 5).</li>
+    <li><strong>Lifecycle:</strong> rig up and down, snapshot and restore, adopt tmux sessions, import and export bundles. A confirm before anything destructive.</li>
+    <li><strong>Snapshot timeline:</strong> the rig's snapshots (every 5 minutes on kernel) on a timeline with one-click restore.</li>
+    <li><strong>Usage:</strong> each seat's context use and the Claude 5-hour and weekly windows from <code>/api/provider/usage</code>.</li>
+    <li><strong>Search:</strong> Ctrl+K searches every seat's log through <code>/api/transcripts/:session/grep</code>.</li>
+  </ul>
+  <div class="notes" data-key="parts"><label>Your notes on the parts</label><textarea></textarea></div>
+</div>
+
+<h2>2. Questions for doole</h2>
+<div class="box">
+  <ol>
+    <li>Monaco or CodeMirror for the editor? <span class="why">Claude recommends: CodeMirror 6: far smaller and loads fast; Monaco is heavy for YAML and Markdown.</span></li>
+  </ol>
+  <div class="notes" data-key="questions"><label>Your notes on the questions (your answers)</label><textarea></textarea></div>
+</div>
+
+<h2>3. How to test each step</h2>
+<div class="box">
+  <p class="why">Added as each step is built.</p>
+</div>
+
+<h2>4. Review checklist (about 30 minutes)</h2>
+<div class="box">
+  <ul class="check">
+    <li>Edit kernel's rig.yaml, see the diff, save, and the change is live after rig up.</li>
+    <li>Rig down asks first and offers a snapshot.</li>
+    <li>Restore from a snapshot on the timeline works.</li>
+    <li>Usage shows real numbers for a Claude seat.</li>
+  </ul>
+  <div class="notes" data-key="review"><label>Your notes on the review</label><textarea></textarea></div>
+</div>
+</main>
+
+<script>
+  const KEY = "rigapp-milestone-3-notes";
+  const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+  const boxes = [...document.querySelectorAll(".notes")];
+  for (const box of boxes) {
+    const area = box.querySelector("textarea");
+    area.value = saved[box.dataset.key] || "";
+    area.addEventListener("input", () => {
+      saved[box.dataset.key] = area.value;
+      localStorage.setItem(KEY, JSON.stringify(saved));
+    });
+  }
+  document.getElementById("copy").addEventListener("click", async (e) => {
+    const lines = boxes
+      .filter((b) => b.querySelector("textarea").value.trim())
+      .map((b) => `[${b.querySelector("label").textContent.replace("Your notes on ", "")}]\n${b.querySelector("textarea").value.trim()}`);
+    const text = lines.length ? "Milestone 3 notes:\n\n" + lines.join("\n\n") : "Milestone 3 notes: none";
+    await navigator.clipboard.writeText(text);
+    e.target.textContent = "Copied";
+    setTimeout(() => (e.target.textContent = "Copy my notes"), 1500);
+  });
+  document.getElementById("clear").addEventListener("click", () => {
+    if (!confirm("Clear all your notes on this page?")) return;
+    localStorage.removeItem(KEY);
+    for (const b of boxes) b.querySelector("textarea").value = "";
+    for (const k in saved) delete saved[k];
+  });
+</script>
+</body>
+</html>

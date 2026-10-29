@@ -1,0 +1,1143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RigApp direction mockup</title>
+<style>
+:root{
+  --g0:#0f1012; --g1:#141518; --g2:#1a1c20; --g3:#212328; --g4:#2a2d33;
+  --ink:#e7e7e4; --ink2:#a3a5ab; --ink3:#6e717a;
+  --acc:#35b39b; --acc-ink:#06201b; --acc-soft:#173a34;
+  --warn:#d6a54a; --err:#e0625b; --idle:#5c6068;
+  --add:#173226; --add-ink:#7fd3a6; --del:#3a1c1e; --del-ink:#f09a94;
+  --ui:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"Cascadia Mono","Cascadia Code",Consolas,ui-monospace,monospace;
+}
+[data-theme=light]{
+  --g0:#eceae6; --g1:#f6f5f2; --g2:#ffffff; --g3:#e9e7e3; --g4:#dedbd6;
+  --ink:#1b1c1e; --ink2:#55585e; --ink3:#878a91;
+  --acc:#127a68; --acc-ink:#ffffff; --acc-soft:#d5ece7;
+  --warn:#a8741a; --err:#c23d36; --idle:#9a9da3;
+  --add:#e1f3e8; --add-ink:#1d6b41; --del:#fbe5e3; --del-ink:#a2322b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#0a0a0b;color:var(--ink);font:13px/1.45 var(--ui)}
+[data-theme=light] body{background:#cfccc6}
+button,input,textarea{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.i.s{width:14px;height:14px}
+code,.mono{font-family:var(--mono);font-size:12px}
+
+/* mockup controls (not part of the app) */
+.mk{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 16px;background:#000;color:#bbb;font-size:12px}
+.mk b{color:#fff;margin-right:8px;font-weight:600}
+.mk button{padding:4px 9px;border-radius:5px;background:#1c1c1f;color:#ccc}
+.mk button.on{background:#e7e7e4;color:#000}
+.mk .sep{width:12px}
+.mk .note{flex-basis:100%;color:#888;margin-top:2px}
+
+.stage{display:flex;justify-content:center;padding:20px 0 40px}
+.frame{width:1440px;height:900px;background:var(--g1);border-radius:10px;overflow:hidden;display:grid;grid-template-columns:268px 1fr 320px;position:relative}
+.frame.noright{grid-template-columns:268px 1fr}
+.frame.noright .right{display:none}
+.frame.phone{width:390px;height:844px;grid-template-columns:1fr;grid-template-rows:52px minmax(0,1fr);border-radius:28px}
+
+/* sidebar */
+.side{background:var(--g0);display:flex;flex-direction:column;min-height:0}
+.brand{display:flex;align-items:center;gap:8px;padding:14px 14px 6px}
+.brand .mark{width:20px;height:20px;border-radius:5px;background:var(--acc);display:grid;place-items:center;color:var(--acc-ink);font-weight:700;font-size:11px}
+.brand .name{font-weight:600;font-size:14px}
+.daemon{display:flex;align-items:center;gap:6px;margin:0 14px 10px;color:var(--ink3);font-size:11.5px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--idle);flex:none}
+.dot.work{background:var(--acc)} .dot.wait{background:var(--warn)} .dot.err{background:var(--err)} .dot.ok{background:var(--acc)}
+.dot.work{animation:none}
+.search{margin:0 10px 8px;display:flex;align-items:center;gap:8px;background:var(--g2);border-radius:7px;padding:7px 9px;color:var(--ink3)}
+.search span{flex:1}
+.kbd{font-family:var(--mono);font-size:10.5px;color:var(--ink3);background:var(--g3);padding:1px 5px;border-radius:4px}
+.nav{padding:0 6px}
+.nrow{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:6px;color:var(--ink2);width:100%;text-align:left}
+.nrow:hover{background:var(--g2)}
+.nrow.on{background:var(--g3);color:var(--ink)}
+.nrow .count{margin-left:auto;font-size:11px;color:var(--warn);font-weight:600}
+.slabel{display:flex;align-items:center;justify-content:space-between;padding:14px 14px 4px;color:var(--ink3);font-size:11.5px;font-weight:600}
+.tree{flex:1;overflow:auto;padding:0 6px 8px}
+.proj{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;color:var(--ink);font-weight:600;width:100%;text-align:left}
+.proj:hover{background:var(--g2)}
+.proj .meta{margin-left:auto;font-weight:400;font-size:11px;color:var(--ink3)}
+.pod{padding:6px 8px 2px 30px;color:var(--ink3);font-size:11px}
+.seat{display:flex;align-items:center;gap:8px;padding:5px 8px 5px 30px;border-radius:6px;color:var(--ink2);width:100%;text-align:left}
+.seat:hover{background:var(--g2)}
+.seat.on{background:var(--g3);color:var(--ink)}
+.seat .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seat .h{margin-left:auto;font-size:10.5px;color:var(--ink3)}
+.seat .unread{width:6px;height:6px;border-radius:50%;background:var(--ink);margin-left:6px;flex:none}
+.seat .lead{font-size:10.5px;color:var(--acc)}
+.sfoot{display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--g0)}
+.sfoot .ver{margin-left:auto;color:var(--ink3);font-size:11px}
+
+/* main */
+.main{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--g1)}
+.top{display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;flex:none}
+.crumb{display:flex;align-items:center;gap:6px;font-weight:600;white-space:nowrap}
+.crumb .p{color:var(--ink3);font-weight:500}
+.tag{font-size:11px;color:var(--ink2);background:var(--g3);padding:2px 7px;border-radius:4px;white-space:nowrap}
+.stat{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2);white-space:nowrap}
+.tabs{display:flex;gap:2px;margin-left:12px;background:var(--g0);padding:3px;border-radius:7px}
+.tab{padding:4px 10px;border-radius:5px;color:var(--ink3);display:flex;align-items:center;gap:6px}
+.tab.on{background:var(--g3);color:var(--ink)}
+.grow{flex:1}
+.ib{width:30px;height:30px;border-radius:6px;display:grid;place-items:center;color:var(--ink2)}
+.ib:hover{background:var(--g3);color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:6px;background:var(--g3);color:var(--ink);font-weight:500;white-space:nowrap}
+.btn:hover{background:var(--g4)}
+.btn.pri{background:var(--acc);color:var(--acc-ink)}
+.btn.ghost{background:none;color:var(--ink2)}
+.btn.ghost:hover{background:var(--g3)}
+.btn.danger{background:var(--err);color:#fff}
+.btn.sm{padding:4px 9px;font-size:12px}
+
+.screen{display:none;flex:1;min-height:0;flex-direction:column}
+.screen.on{display:flex}
+.scroll{flex:1;overflow:auto;min-height:0}
+
+/* chat */
+.chat{max-width:780px;margin:0 auto;padding:12px 28px 24px;display:flex;flex-direction:column;gap:18px}
+.day{text-align:center;color:var(--ink3);font-size:11.5px}
+.msg-user{align-self:flex-end;max-width:78%;background:var(--g3);padding:10px 13px;border-radius:12px 12px 4px 12px}
+.msg-user .who{font-size:11px;color:var(--ink3);margin-bottom:3px}
+.msg-a{display:flex;flex-direction:column;gap:8px}
+.msg-a .who{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink2)}
+.msg-a .who b{color:var(--ink);font-weight:600}
+.msg-a p{line-height:1.6}
+.msg-a ul{padding-left:18px;line-height:1.6}
+.mention{color:var(--acc);font-weight:500}
+.tool{background:var(--g2);border-radius:8px;overflow:hidden}
+.tool-h{display:flex;align-items:center;gap:8px;padding:7px 10px;color:var(--ink2);width:100%;text-align:left}
+.tool-h .nm{color:var(--ink);font-weight:500}
+.tool-h .arg{font-family:var(--mono);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;color:var(--ink3)}
+.tool-h .t{font-size:11px;color:var(--ink3)}
+.tool-b{display:none;padding:0 10px 10px}
+.tool.open .tool-b{display:block}
+.tool.open .chev{transform:rotate(90deg)}
+.pre{font-family:var(--mono);font-size:11.5px;background:var(--g0);border-radius:6px;padding:9px 11px;line-height:1.55;white-space:pre;overflow:auto;color:var(--ink2)}
+.pre .ok{color:var(--add-ink)} .pre .bad{color:var(--del-ink)}
+.toolgroup{display:flex;flex-direction:column;gap:4px}
+.threadcard{display:flex;align-items:center;gap:10px;background:var(--g2);border-radius:8px;padding:9px 11px;width:100%;text-align:left}
+.threadcard:hover{background:var(--g3)}
+.threadcard .t1{font-weight:500}
+.threadcard .t2{font-size:11.5px;color:var(--ink3)}
+.threadcard .st{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink2);white-space:nowrap}
+.diff{background:var(--g2);border-radius:8px;overflow:hidden}
+.diff-h{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:12px;color:var(--ink2)}
+.diff-h .f{font-family:var(--mono);color:var(--ink)}
+.diff-h .n{margin-left:auto;font-family:var(--mono);font-size:11px}
+.diff-h .n .a{color:var(--add-ink)} .diff-h .n .d{color:var(--del-ink)}
+.dl{font-family:var(--mono);font-size:11.5px;line-height:1.6;display:grid;grid-template-columns:38px 1fr;white-space:pre}
+.dl .ln{color:var(--ink3);text-align:right;padding-right:10px;user-select:none}
+.dl.add{background:var(--add);color:var(--add-ink)} .dl.del{background:var(--del);color:var(--del-ink)}
+.dl.ctx{color:var(--ink2)}
+.dl.hunk{color:var(--ink3);background:var(--g0)}
+.approval{background:var(--g2);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;outline:1.5px solid var(--warn);outline-offset:-1.5px}
+.approval .ah{display:flex;align-items:center;gap:8px;font-weight:600}
+.approval .ah .i{color:var(--warn)}
+.approval .row{display:flex;gap:8px;flex-wrap:wrap}
+.activity{display:flex;align-items:center;gap:8px;color:var(--ink3);font-size:12px}
+.typing{display:flex;align-items:center;gap:8px;color:var(--ink2);font-size:12px}
+.typing .bar{width:42px;height:4px;border-radius:2px;background:var(--acc-soft);position:relative;overflow:hidden}
+.typing .bar::after{content:"";position:absolute;left:0;top:0;bottom:0;width:40%;background:var(--acc);border-radius:2px}
+
+/* composer */
+.composer{padding:0 28px 16px;flex:none}
+.cbox{max-width:780px;margin:0 auto;background:var(--g2);border-radius:12px;padding:10px 12px 8px;position:relative}
+.cbox .to{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink3);margin-bottom:6px}
+.cbox .to b{color:var(--ink2);font-weight:500}
+.cbox .txt{min-height:44px;line-height:1.55;color:var(--ink)}
+.cbox .txt .ph{color:var(--ink3)}
+.cbox .caret{display:inline-block;width:1.5px;height:15px;background:var(--ink);vertical-align:-3px;margin-left:1px}
+.cbar{display:flex;align-items:center;gap:4px;margin-top:6px}
+.cbar .hint{font-size:11px;color:var(--ink3);margin-left:6px}
+.send{width:30px;height:30px;border-radius:8px;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center;margin-left:auto}
+.stop{height:30px;border-radius:8px;background:var(--ink);color:var(--g1);display:flex;align-items:center;gap:6px;padding:0 10px;margin-left:auto;font-weight:600;font-size:12px}
+.pop{position:absolute;left:12px;bottom:calc(100% + 6px);width:340px;background:var(--g3);border-radius:10px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.pop .ph{font-size:11px;color:var(--ink3);padding:4px 8px}
+.pop .it{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px}
+.pop .it.on{background:var(--g4)}
+.pop .it .d{margin-left:auto;font-size:11px;color:var(--ink3)}
+
+/* right panel */
+.right{background:var(--g0);display:flex;flex-direction:column;min-height:0}
+.rtabs{display:flex;gap:2px;padding:9px 10px 6px}
+.rtab{padding:5px 9px;border-radius:6px;color:var(--ink3);display:flex;align-items:center;gap:6px;font-size:12px}
+.rtab.on{background:var(--g2);color:var(--ink)}
+.rpane{display:none;flex:1;overflow:auto;padding:6px 14px 16px;flex-direction:column;gap:14px}
+.rpane.on{display:flex}
+.rh{font-size:11.5px;font-weight:600;color:var(--ink3);margin-bottom:6px}
+.kv{display:grid;grid-template-columns:104px 1fr;gap:5px 10px;font-size:12px}
+.kv dt{color:var(--ink3)} .kv dd{color:var(--ink);overflow-wrap:anywhere}
+.box{background:var(--g2);border-radius:8px;padding:10px 11px}
+.flist .f{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:5px;font-size:12px;color:var(--ink2)}
+.flist .f:hover{background:var(--g2)}
+.flist .f .m{margin-left:auto;font-size:11px;color:var(--ink3)}
+.kp{padding:8px 9px;border-radius:7px;background:var(--g2)}
+.kp .t{font-weight:500}
+.kp .s{font-size:11.5px;color:var(--ink3);margin-top:2px}
+.small{font-size:11.5px;color:var(--ink3)}
+.field{display:flex;align-items:center;gap:8px;background:var(--g2);border-radius:7px;padding:7px 9px;color:var(--ink3)}
+
+/* overview */
+.page{max-width:980px;margin:0 auto;padding:18px 32px 40px;width:100%}
+.page h1{font-size:20px;font-weight:600;margin-bottom:4px}
+.page .lede{color:var(--ink2);margin-bottom:18px}
+.filters{display:flex;gap:6px;margin-bottom:18px}
+.grp{margin-bottom:22px}
+.grp-h{display:flex;align-items:center;gap:8px;font-weight:600;margin-bottom:6px}
+.grp-h .c{color:var(--ink3);font-weight:400}
+.orow{display:grid;grid-template-columns:18px 190px 1fr auto auto;align-items:center;gap:12px;padding:9px 10px;border-radius:7px;background:var(--g2);margin-bottom:3px}
+.orow:hover{background:var(--g3)}
+.orow .seatn{font-weight:500;white-space:nowrap}
+.orow .seatn span{color:var(--ink3);font-weight:400}
+.orow .what{color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.orow .when{color:var(--ink3);font-size:11.5px;white-space:nowrap}
+
+/* graph */
+.graphwrap{flex:1;position:relative;background:var(--g1)}
+.graphwrap svg.g{width:100%;height:100%}
+.legend{position:absolute;left:16px;bottom:14px;display:flex;gap:14px;background:var(--g2);padding:7px 11px;border-radius:7px;font-size:11.5px;color:var(--ink2)}
+.legend span{display:flex;align-items:center;gap:6px}
+.gtools{position:absolute;right:14px;top:12px;display:flex;flex-direction:column;gap:2px;background:var(--g2);border-radius:7px;padding:3px}
+
+/* terminal */
+.term{flex:1;margin:0 14px 14px;background:#0b0c0d;border-radius:8px;display:flex;flex-direction:column;min-height:0}
+[data-theme=light] .term{background:#16171a}
+.termbar{display:flex;align-items:center;gap:10px;padding:8px 12px;color:#a3a5ab;font-size:12px}
+.termbar .ro{display:flex;align-items:center;gap:6px;color:#d6a54a}
+.switch{width:30px;height:17px;border-radius:9px;background:#2a2d33;position:relative;flex:none}
+.switch::after{content:"";position:absolute;width:13px;height:13px;border-radius:50%;background:#a3a5ab;top:2px;left:2px}
+.switch.on{background:var(--acc)} .switch.on::after{left:15px;background:#fff}
+.tty{flex:1;overflow:auto;padding:6px 14px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.5;color:#d4d4d0;white-space:pre}
+.tty .c1{color:#7fd3a6}.tty .c2{color:#d6a54a}.tty .c3{color:#7aa7d8}.tty .c4{color:#8b8e95}.tty .c5{color:#f09a94}
+.tty .cur{background:#d4d4d0;color:#0b0c0d}
+
+/* specs */
+.specs{flex:1;display:grid;grid-template-columns:220px 1fr;min-height:0}
+.specfiles{background:var(--g0);padding:8px 6px;overflow:auto}
+.specfiles .grp-l{font-size:11px;color:var(--ink3);padding:8px 8px 3px}
+.specfiles .f{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;color:var(--ink2);font-size:12px;width:100%;text-align:left}
+.specfiles .f.on{background:var(--g3);color:var(--ink)}
+.specfiles .f .mod{margin-left:auto;width:6px;height:6px;border-radius:50%;background:var(--warn)}
+.editor{display:flex;flex-direction:column;min-height:0}
+.edbar{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:12px;color:var(--ink2)}
+.edbar .valid{display:flex;align-items:center;gap:6px;color:var(--add-ink)}
+.code{flex:1;overflow:auto;background:var(--g2);margin:0 14px;border-radius:8px;padding:10px 0;font-family:var(--mono);font-size:12px;line-height:1.6}
+.cl{display:grid;grid-template-columns:44px 1fr;white-space:pre}
+.cl .n{color:var(--ink3);text-align:right;padding-right:14px}
+.cl.chg{background:var(--add)}
+.y-k{color:#7aa7d8}.y-s{color:#c8b27a}.y-c{color:var(--ink3)}
+[data-theme=light] .y-k{color:#1d5a99} [data-theme=light] .y-s{color:#8a5a00}
+.edfoot{display:flex;align-items:center;gap:8px;padding:10px 14px}
+
+/* browser */
+.bwrap{flex:1;margin:0 14px 14px;background:var(--g2);border-radius:8px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.btabs{display:flex;align-items:center;gap:2px;padding:6px 8px 0}
+.btab{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:7px 7px 0 0;color:var(--ink3);font-size:12px;max-width:200px}
+.btab.on{background:var(--g3);color:var(--ink)}
+.btab .x{margin-left:6px;opacity:.6}
+.bbar{display:flex;align-items:center;gap:4px;padding:6px 8px;background:var(--g3)}
+.addr{flex:1;display:flex;align-items:center;gap:8px;background:var(--g1);border-radius:7px;padding:6px 10px;font-size:12.5px}
+.addr .host{color:var(--ink)} .addr .path{color:var(--ink3)}
+.driving{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink2);margin:0 6px;white-space:nowrap}
+.bbody{flex:1;display:grid;grid-template-columns:1fr 280px;min-height:0}
+.site{background:#fafaf8;color:#1c1d20;overflow:auto;padding:34px 40px;position:relative;font-family:system-ui,sans-serif}
+.site h3{font-size:22px;font-weight:650;margin-bottom:4px}
+.site .sub{color:#6a6d74;margin-bottom:22px;font-size:13px}
+.site label{display:block;font-size:12px;font-weight:600;color:#44474d;margin-bottom:6px}
+.site .ta{background:#fff;border:1px solid #d8d6d1;border-radius:6px;padding:10px 12px;font-family:var(--mono);font-size:13px;height:84px;margin-bottom:12px;color:#1c1d20}
+.site .run{display:inline-block;background:#1c1d20;color:#fff;border-radius:6px;padding:8px 18px;font-weight:600;font-size:13px;position:relative}
+.site .run::after{content:"";position:absolute;inset:-5px;border:2px solid var(--acc);border-radius:9px}
+.site .out{margin-top:20px;background:#fff;border:1px solid #d8d6d1;border-radius:6px;padding:12px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.6}
+.site .out .e{color:#b3261e}
+.site .cursor{position:absolute;left:118px;top:262px;width:14px;height:20px}
+.alog{background:var(--g0);display:flex;flex-direction:column;min-height:0}
+.alog .h{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 6px;font-size:12px;font-weight:600;color:var(--ink2)}
+.alog .list{flex:1;overflow:auto;padding:0 8px 8px;display:flex;flex-direction:column;gap:2px}
+.act{display:grid;grid-template-columns:38px 1fr;gap:8px;padding:6px 6px;border-radius:6px;font-size:12px}
+.act .tm{color:var(--ink3);font-size:11px;padding-top:1px}
+.act .tl{color:var(--ink)} .act .ar{color:var(--ink3);font-family:var(--mono);font-size:11px;overflow-wrap:anywhere}
+.act.wait{background:var(--g2)} .act.wait .tl{color:var(--warn)}
+.confirm{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--g3)}
+.confirm .q{flex:1;display:flex;align-items:center;gap:8px}
+.confirm .q .i{color:var(--warn)}
+.frame.phone .bbody{grid-template-columns:1fr}
+.frame.phone .alog,.frame.phone .driving span.txt{display:none}
+.frame.phone .bwrap{margin:0}
+.frame.phone .site{padding:20px 16px}
+.frame.phone .confirm{flex-wrap:wrap}
+.frame.phone .confirm .q{flex-basis:100%;display:block}
+.frame.phone .confirm .q .i{vertical-align:-3px;margin-right:6px}
+
+/* settings */
+.settings{flex:1;display:grid;grid-template-columns:220px 1fr;min-height:0}
+.setnav{background:var(--g0);padding:14px 8px;display:flex;flex-direction:column;gap:2px}
+.setnav .h{font-size:16px;font-weight:600;padding:0 8px 10px}
+.setbody{overflow:auto;padding:18px 36px 60px}
+.sec{max-width:720px;margin-bottom:30px}
+.sec h2{font-size:15px;font-weight:600;margin-bottom:10px}
+.srow{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:center;padding:11px 14px;background:var(--g2);margin-bottom:2px}
+.srow:first-of-type{border-radius:8px 8px 0 0}
+.srow.last{border-radius:0 0 8px 8px}
+.srow .l{font-weight:500}
+.srow .d{color:var(--ink3);font-size:12px;margin-top:1px}
+.seg{display:flex;background:var(--g0);border-radius:7px;padding:3px;justify-self:end}
+.seg span{padding:4px 10px;border-radius:5px;color:var(--ink3)}
+.seg span.on{background:var(--g3);color:var(--ink)}
+.inp{background:var(--g0);border-radius:6px;padding:6px 9px;font-family:var(--mono);font-size:12px;color:var(--ink)}
+.right-end{justify-self:end;display:flex;align-items:center;gap:8px}
+.ktable{width:100%;border-collapse:collapse;background:var(--g2);border-radius:8px;overflow:hidden}
+.ktable td{padding:8px 14px;background:var(--g2)}
+.ktable tr:nth-child(even) td{background:color-mix(in srgb,var(--g2) 70%,var(--g3))}
+.ktable td:last-child{text-align:right}
+.key{font-family:var(--mono);font-size:11.5px;background:var(--g0);padding:3px 7px;border-radius:5px;margin-left:3px}
+.key.rec{outline:1.5px solid var(--acc);color:var(--acc)}
+.notes{background:var(--g2);border-radius:8px;padding:14px 16px;line-height:1.6}
+.notes h3{font-size:14px;margin-bottom:6px}
+.notes h4{font-size:12.5px;color:var(--ink2);margin:10px 0 3px}
+.notes ul{padding-left:18px}
+.notice{background:var(--g2);border-radius:8px;padding:12px 14px;color:var(--ink2);line-height:1.6}
+
+/* setup */
+.setup{position:absolute;inset:0;background:var(--g1);display:none;grid-template-columns:1fr;overflow:auto}
+.setup.on{display:grid}
+.setup .in{max-width:760px;margin:0 auto;padding:70px 40px}
+.setup h1{font-size:24px;font-weight:600;margin-bottom:8px}
+.setup .lede{color:var(--ink2);font-size:14px;margin-bottom:26px;max-width:600px}
+.checks{background:var(--g2);border-radius:10px;margin-bottom:24px}
+.chk{display:grid;grid-template-columns:22px 170px 1fr;gap:10px;align-items:center;padding:11px 14px}
+.chk + .chk{background:color-mix(in srgb,var(--g2) 70%,var(--g3))}
+.chk .i.okc{color:var(--add-ink)} .chk .i.badc{color:var(--err)}
+.chk .v{color:var(--ink2)}
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:14px;margin-bottom:24px}
+.step{display:grid;grid-template-columns:28px 1fr;gap:10px}
+.step::before{counter-increment:s;content:counter(s);width:24px;height:24px;border-radius:50%;background:var(--g3);display:grid;place-items:center;font-weight:600;font-size:12px}
+.step .cmd{margin-top:6px;font-family:var(--mono);font-size:12px;background:var(--g0);padding:8px 11px;border-radius:6px;display:flex;align-items:center;gap:10px}
+.step .cmd span{flex:1}
+.ostabs{display:flex;gap:2px;background:var(--g0);padding:3px;border-radius:7px;width:max-content;margin-bottom:16px}
+
+/* overlays */
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;padding-top:110px;z-index:5}
+.scrim.on{display:flex}
+.palette{width:600px;background:var(--g2);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.palette .q{display:flex;align-items:center;gap:10px;padding:13px 15px;font-size:14px;background:var(--g3)}
+.palette .grp-l{font-size:11px;color:var(--ink3);padding:9px 15px 3px}
+.palette .it{display:flex;align-items:center;gap:10px;padding:8px 15px}
+.palette .it.on{background:var(--g3)}
+.palette .it .r{margin-left:auto;display:flex;gap:3px}
+.palette .foot{display:flex;gap:14px;padding:8px 15px;font-size:11px;color:var(--ink3);background:var(--g1)}
+.dialog{width:460px;background:var(--g2);border-radius:12px;padding:18px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5);margin-top:80px}
+.dialog h3{font-size:15px;margin-bottom:8px}
+.dialog p{color:var(--ink2);line-height:1.55;margin-bottom:10px}
+.dialog .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+
+/* phone */
+.ptop{display:none}
+.frame.phone .side,.frame.phone .right{display:none}
+.frame.phone .ptop{display:flex;align-items:center;gap:8px;height:52px;padding:0 10px;background:var(--g0)}
+.frame.phone .ptop .t{font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.frame.phone .top .tabs,.frame.phone .top .hide-p{display:none}
+.frame.phone .top{display:none}
+.frame.phone .chat{padding:10px 14px 18px}
+.frame.phone .composer{padding:0 10px 12px}
+.frame.phone .cbar .hint{display:none}
+.frame.phone .msg-user{max-width:88%}
+.frame.phone .page{padding:14px 14px 30px}
+.frame.phone .orow{grid-template-columns:14px 1fr auto;row-gap:2px}
+.frame.phone .orow .what{grid-column:2/4}
+.frame.phone .orow .act{display:none}
+.frame.phone .settings,.frame.phone .specs{grid-template-columns:1fr}
+.frame.phone .setnav,.frame.phone .specfiles{display:none}
+.frame.phone .srow{grid-template-columns:1fr}
+.frame.phone .srow > :last-child{justify-self:start}
+.frame.phone .setbody{padding:14px}
+.frame.phone .setup .in{padding:30px 18px}
+.frame.phone .chk{grid-template-columns:22px 1fr}
+.frame.phone .chk .v{grid-column:2}
+.frame.phone .palette,.frame.phone .dialog{width:360px}
+.frame.phone .pop{width:300px}
+.frame.phone .ptabs{display:flex}
+.ptabs{display:none;gap:2px;padding:6px 10px;background:var(--g0)}
+.ptabs .tab{flex:1;justify-content:center}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-chevd" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-term" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect width="12" height="12" x="6" y="6" rx="2"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></symbol>
+  <symbol id="i-at" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-panel" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+  <symbol id="i-overview" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></symbol>
+  <symbol id="i-graph" viewBox="0 0 24 24"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></symbol>
+  <symbol id="i-filecode" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m10 13-2 2 2 2"/><path d="m14 17 2-2-2-2"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></symbol>
+  <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></symbol>
+  <symbol id="i-memory" viewBox="0 0 24 24"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol>
+  <symbol id="i-tool" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></symbol>
+  <symbol id="i-diff" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M9 10h6"/><path d="M12 13V7"/><path d="M9 17h6"/></symbol>
+</svg>
+
+<div class="mk" id="mk">
+  <b>RigApp mockup</b>
+  <button data-go="lead" class="on">Lead chat</button>
+  <button data-go="thread">Thread + approval</button>
+  <button data-go="overview">Overview</button>
+  <button data-go="graph">Graph</button>
+  <button data-go="terminal">Terminal</button>
+  <button data-go="specs">Specs</button>
+  <button data-go="browser">Browser</button>
+  <button data-go="memory">Memory and code</button>
+  <button data-go="settings">Settings</button>
+  <button data-go="setup">Setup screen</button>
+  <button data-go="mention">@mention</button>
+  <button data-go="palette">Ctrl+K</button>
+  <span class="sep"></span>
+  <button id="themeBtn">Light theme</button>
+  <button id="phoneBtn">Phone 390</button>
+  <div class="note">Rig, pod and seat names, statuses, edges and spec text come from your running OpenRig daemon (kernel and starter). Chat text, files, diffs and memory pages are illustrative. Nothing here is wired up.</div>
+</div>
+
+<div class="stage">
+<div class="frame" id="frame">
+
+  <!-- phone top bar -->
+  <div class="ptop">
+    <button class="ib"><svg class="i"><use href="#i-menu"/></svg></button>
+    <span class="dot work"></span><span class="t" id="ptitle">kernel · advisor.lead</span>
+    <button class="ib"><svg class="i"><use href="#i-overview"/></svg></button>
+    <button class="ib"><svg class="i"><use href="#i-more"/></svg></button>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="side">
+    <div class="brand"><div class="mark">R</div><span class="name">RigApp</span><span class="grow"></span><button class="ib"><svg class="i"><use href="#i-panel"/></svg></button></div>
+    <div class="daemon"><span class="dot ok"></span>OpenRig 0.7.4 · WSL Ubuntu · 127.0.0.1:7433</div>
+    <div class="search"><svg class="i s"><use href="#i-search"/></svg><span>Search</span><span class="kbd">Ctrl K</span></div>
+    <div class="nav">
+      <button class="nrow" data-go="overview" data-nav="overview"><svg class="i"><use href="#i-overview"/></svg>Overview<span class="count">3</span></button>
+      <button class="nrow"><svg class="i"><use href="#i-plus"/></svg>New project</button>
+    </div>
+    <div class="slabel"><span>Projects</span><button class="ib" style="width:22px;height:22px"><svg class="i s"><use href="#i-more"/></svg></button></div>
+    <div class="tree">
+      <button class="proj" data-go="graph"><svg class="i s" style="color:var(--ink3)"><use href="#i-chevd"/></svg>kernel<span class="meta">running · 4 seats</span></button>
+      <div class="pod">Advisor</div>
+      <button class="seat" data-go="lead" data-seat="lead"><span class="dot work"></span><span class="nm">lead</span><span class="lead">lead</span><span class="h">Claude Code</span></button>
+      <div class="pod">Operator</div>
+      <button class="seat" data-seat="opagent"><span class="dot wait"></span><span class="nm">agent</span><span class="unread"></span><span class="h">Claude Code</span></button>
+      <button class="seat" data-go="terminal" data-seat="ophuman"><span class="dot"></span><span class="nm">human</span><span class="h">Terminal</span></button>
+      <div class="pod">Queue</div>
+      <button class="seat" data-go="thread" data-seat="worker"><span class="dot wait"></span><span class="nm">worker</span><span class="unread"></span><span class="h">Claude Code</span></button>
+
+      <button class="proj" style="margin-top:6px"><svg class="i s" style="color:var(--ink3)"><use href="#i-chevd"/></svg>starter<span class="meta">stopped · snapshot</span></button>
+      <div class="pod">Dev</div>
+      <button class="seat"><span class="dot err"></span><span class="nm">build</span><span class="h">Claude Code</span></button>
+      <button class="seat"><span class="dot"></span><span class="nm">review</span><span class="h">Claude Code</span></button>
+    </div>
+    <div class="sfoot">
+      <button class="nrow" data-go="settings" data-nav="settings" style="width:auto"><svg class="i"><use href="#i-settings"/></svg>Settings</button>
+      <span class="ver">0.1.0</span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="ptabs" id="ptabs">
+      <button class="tab on">Chat</button><button class="tab">Graph</button><button class="tab">Terminal</button><button class="tab">Specs</button><button class="tab">Browser</button>
+    </div>
+
+    <!-- LEAD CHAT -->
+    <section class="screen" data-screen="lead">
+      <div class="top">
+        <div class="crumb"><span class="p">kernel</span><svg class="i s" style="color:var(--ink3)"><use href="#i-chev"/></svg>advisor.lead</div>
+        <span class="tag">Claude Code</span>
+        <span class="stat hide-p"><span class="dot work"></span>Working</span>
+        <div class="tabs">
+          <button class="tab on"><svg class="i s"><use href="#i-chat"/></svg>Chat</button>
+          <button class="tab" data-go="graph"><svg class="i s"><use href="#i-graph"/></svg>Graph</button>
+          <button class="tab" data-go="terminal"><svg class="i s"><use href="#i-term"/></svg>Terminal</button>
+          <button class="tab" data-go="specs"><svg class="i s"><use href="#i-filecode"/></svg>Specs</button>
+          <button class="tab" data-go="browser"><svg class="i s"><use href="#i-globe"/></svg>Browser</button>
+        </div>
+        <span class="grow"></span>
+        <button class="btn ghost sm hide-p"><svg class="i s"><use href="#i-camera"/></svg>Snapshot</button>
+        <button class="ib hide-p"><svg class="i"><use href="#i-more"/></svg></button>
+        <button class="ib hide-p"><svg class="i"><use href="#i-panel"/></svg></button>
+      </div>
+      <div class="scroll">
+        <div class="chat">
+          <div class="day">Today 10:41</div>
+          <div class="msg-user"><div class="who">You</div>Get the queue worker to run the full test suite on the parser branch, and have the operator check why last night's bundle import failed.</div>
+          <div class="msg-a">
+            <div class="who"><span class="dot work"></span><b>advisor.lead</b> · Claude Code</div>
+            <p>Two separate jobs, so I've sent one to each seat.</p>
+            <div class="toolgroup">
+              <div class="tool"><button class="tool-h" data-toggle><svg class="i s chev"><use href="#i-chev"/></svg><svg class="i s"><use href="#i-term"/></svg><span class="nm">Bash</span><span class="arg">rig send queue.worker "Run the full test suite on parser…"</span><span class="t">0.4s</span></button>
+                <div class="tool-b"><div class="pre">$ rig send queue.worker "Run the full test suite on the parser branch and report failures with file and line."
+<span class="ok">sent</span> to queue-worker@kernel (verified in pane)</div></div></div>
+              <div class="tool"><button class="tool-h" data-toggle><svg class="i s chev"><use href="#i-chev"/></svg><svg class="i s"><use href="#i-term"/></svg><span class="nm">Bash</span><span class="arg">rig send operator.agent "Check why the 02:10 bundle import failed…"</span><span class="t">0.3s</span></button>
+                <div class="tool-b"><div class="pre">$ rig send operator.agent "Check why the 02:10 bundle import failed. Read the import log first."
+<span class="ok">sent</span> to operator-agent@kernel (verified in pane)</div></div></div>
+            </div>
+            <button class="threadcard" data-go="thread"><span class="dot wait"></span><div><div class="t1">queue.worker</div><div class="t2">Run the full test suite on the parser branch</div></div><span class="st">Waiting on you<svg class="i s"><use href="#i-chev"/></svg></span></button>
+            <button class="threadcard"><span class="dot work"></span><div><div class="t1">operator.agent</div><div class="t2">Find why the 02:10 bundle import failed</div></div><span class="st">Working<svg class="i s"><use href="#i-chev"/></svg></span></button>
+          </div>
+
+          <div class="activity"><svg class="i s"><use href="#i-check"/></svg>queue.worker reported back · 10:52</div>
+
+          <div class="msg-a">
+            <div class="who"><span class="dot work"></span><b>advisor.lead</b> · Claude Code</div>
+            <p>The worker found 2 failing tests, both in <code>tokenizer.spec.ts</code>. The tokenizer drops a trailing escape at the end of input. It proposes this fix:</p>
+            <div class="diff">
+              <div class="diff-h"><svg class="i s"><use href="#i-diff"/></svg><span class="f">src/parser/tokenizer.ts</span><span class="n"><span class="a">+3</span> <span class="d">−1</span></span></div>
+              <div class="dl hunk"><span class="ln"></span>@@ -118,7 +118,9 @@ function readString(src: string, at: number)</div>
+              <div class="dl ctx"><span class="ln">118</span>    if (ch === "\\") {</div>
+              <div class="dl del"><span class="ln">119</span>-     out += src[i + 1];</div>
+              <div class="dl add"><span class="ln">119</span>+     const next = src[i + 1];</div>
+              <div class="dl add"><span class="ln">120</span>+     if (next === undefined) throw new UnterminatedEscape(at);</div>
+              <div class="dl add"><span class="ln">121</span>+     out += next;</div>
+              <div class="dl ctx"><span class="ln">122</span>      i += 2;</div>
+              <div class="dl ctx"><span class="ln">123</span>      continue;</div>
+            </div>
+            <p>Want it applied and the tokenizer tests rerun? The operator is still reading the import log.</p>
+          </div>
+          <div class="typing"><span class="bar"></span>advisor.lead is working · reading 2 replies</div>
+        </div>
+      </div>
+      <div class="composer">
+        <div class="cbox">
+          <div class="pop" id="mention" style="display:none">
+            <div class="ph">Send to a seat in kernel</div>
+            <div class="it on"><span class="dot wait"></span>queue.worker<span class="d">Claude Code · waiting</span></div>
+            <div class="it"><span class="dot work"></span>operator.agent<span class="d">Claude Code · working</span></div>
+            <div class="it"><span class="dot"></span>operator.human<span class="d">Terminal · idle</span></div>
+            <div class="it"><span class="dot work"></span>advisor.lead<span class="d">lead · working</span></div>
+          </div>
+          <div class="to">To <b>advisor.lead</b> (lead)</div>
+          <div class="txt">Yes, apply it. <span class="mention">@queue</span><span class="caret"></span></div>
+          <div class="cbar">
+            <button class="ib"><svg class="i"><use href="#i-clip"/></svg></button>
+            <button class="ib"><svg class="i"><use href="#i-at"/></svg></button>
+            <span class="hint">/ for rig commands · Enter to send · Shift+Enter for a new line</span>
+            <button class="stop"><svg class="i s" style="fill:currentColor"><use href="#i-stop"/></svg>Stop</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- THREAD + APPROVAL -->
+    <section class="screen" data-screen="thread">
+      <div class="top">
+        <div class="crumb"><span class="p">kernel</span><svg class="i s" style="color:var(--ink3)"><use href="#i-chev"/></svg>queue.worker</div>
+        <span class="tag">Claude Code</span>
+        <span class="stat hide-p"><span class="dot wait"></span>Waiting on you</span>
+        <div class="tabs">
+          <button class="tab on"><svg class="i s"><use href="#i-chat"/></svg>Chat</button>
+          <button class="tab" data-go="graph"><svg class="i s"><use href="#i-graph"/></svg>Graph</button>
+          <button class="tab" data-go="terminal"><svg class="i s"><use href="#i-term"/></svg>Terminal</button>
+          <button class="tab" data-go="specs"><svg class="i s"><use href="#i-filecode"/></svg>Specs</button>
+          <button class="tab" data-go="browser"><svg class="i s"><use href="#i-globe"/></svg>Browser</button>
+        </div>
+        <span class="grow"></span>
+        <button class="btn ghost sm hide-p"><svg class="i s"><use href="#i-stop"/></svg>Interrupt</button>
+        <button class="ib hide-p"><svg class="i"><use href="#i-more"/></svg></button>
+      </div>
+      <div class="scroll">
+        <div class="chat">
+          <div class="day">Today 10:43</div>
+          <div class="msg-user"><div class="who">advisor.lead → queue.worker</div>Run the full test suite on the parser branch and report failures with file and line.</div>
+          <div class="msg-a">
+            <div class="who"><span class="dot wait"></span><b>queue.worker</b> · Claude Code</div>
+            <div class="toolgroup">
+              <div class="tool"><button class="tool-h" data-toggle><svg class="i s chev"><use href="#i-chev"/></svg><svg class="i s"><use href="#i-term"/></svg><span class="nm">Bash</span><span class="arg">git switch parser &amp;&amp; git pull --ff-only</span><span class="t">1.2s</span></button>
+                <div class="tool-b"><div class="pre">Switched to branch 'parser'
+Already up to date.</div></div></div>
+              <div class="tool open"><button class="tool-h" data-toggle><svg class="i s chev"><use href="#i-chev"/></svg><svg class="i s"><use href="#i-term"/></svg><span class="nm">Bash</span><span class="arg">npm test -- --run</span><span class="t">8.7s</span></button>
+                <div class="tool-b"><div class="pre"> <span class="ok">✓</span> test/lexer.spec.ts (41)
+ <span class="ok">✓</span> test/ast.spec.ts (63)
+ <span class="bad">✗</span> test/tokenizer.spec.ts (28) 2 failed
+   <span class="bad">✗</span> reads a trailing escape at end of input   tokenizer.spec.ts:112
+   <span class="bad">✗</span> reports an unterminated string            tokenizer.spec.ts:131
+ Tests  2 failed | 130 passed (132)</div></div></div>
+              <div class="tool"><button class="tool-h" data-toggle><svg class="i s chev"><use href="#i-chev"/></svg><svg class="i s"><use href="#i-file"/></svg><span class="nm">Read</span><span class="arg">src/parser/tokenizer.ts  lines 100–140</span><span class="t">0.1s</span></button>
+                <div class="tool-b"><div class="pre">read 41 lines</div></div></div>
+            </div>
+            <p>Two failures, same cause: <code>readString</code> reads past the end when the input ends on a backslash. I've written the fix and want to rerun only the tokenizer tests to check it.</p>
+          </div>
+          <div class="approval">
+            <div class="ah"><svg class="i"><use href="#i-shield"/></svg>queue.worker wants to run a command</div>
+            <div class="pre">npm test -- --run test/tokenizer.spec.ts</div>
+            <div class="small">In /home/doole/.openrig/workspace · Bash · asked 10:52</div>
+            <div class="row">
+              <button class="btn pri"><svg class="i s"><use href="#i-check"/></svg>Approve</button>
+              <button class="btn">Approve for this thread</button>
+              <button class="btn ghost"><svg class="i s"><use href="#i-x"/></svg>Deny</button>
+              <span class="grow"></span>
+              <span class="small" style="align-self:center"><span class="key">Y</span> approve · <span class="key">N</span> deny</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="composer">
+        <div class="cbox">
+          <div class="to">Direct to <b>queue.worker</b> · goes straight to this seat</div>
+          <div class="txt"><span class="ph">Message queue.worker…</span></div>
+          <div class="cbar">
+            <button class="ib"><svg class="i"><use href="#i-clip"/></svg></button>
+            <button class="ib"><svg class="i"><use href="#i-at"/></svg></button>
+            <span class="hint">/ for rig commands · Enter to send · Shift+Enter for a new line</span>
+            <button class="send"><svg class="i"><use href="#i-up"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OVERVIEW -->
+    <section class="screen" data-screen="overview">
+      <div class="top"><div class="crumb">Overview</div><span class="grow"></span><button class="btn ghost sm hide-p"><svg class="i s"><use href="#i-refresh"/></svg>Refresh</button></div>
+      <div class="scroll">
+        <div class="page">
+          <h1>What needs you</h1>
+          <p class="lede">3 seats are waiting across 2 projects. Everything else is working or idle.</p>
+          <div class="filters"><button class="btn sm">All projects</button><button class="btn ghost sm">kernel</button><button class="btn ghost sm">starter</button></div>
+
+          <div class="grp">
+            <div class="grp-h"><span class="dot wait"></span>Waiting on you <span class="c">2</span></div>
+            <div class="orow" data-go="thread"><span class="dot wait"></span><span class="seatn">queue.worker <span>· kernel</span></span><span class="what">Approve a command: npm test -- --run test/tokenizer.spec.ts</span><span class="when">2 min</span><span class="act"><button class="btn pri sm">Approve</button> <button class="btn ghost sm">Open</button></span></div>
+            <div class="orow"><span class="dot wait"></span><span class="seatn">operator.agent <span>· kernel</span></span><span class="what">Asked: "Re-import the 02:10 bundle, or the 01:40 one that last passed?"</span><span class="when">just now</span><span class="act"><button class="btn sm">Reply</button></span></div>
+          </div>
+          <div class="grp">
+            <div class="grp-h"><span class="dot err"></span>Errored <span class="c">1</span></div>
+            <div class="orow"><span class="dot err"></span><span class="seatn">dev.build <span>· starter</span></span><span class="what">Session exited. Last snapshot 10:55 can restore it.</span><span class="when">1 h</span><span class="act"><button class="btn sm"><svg class="i s"><use href="#i-play"/></svg>Restore</button></span></div>
+          </div>
+          <div class="grp">
+            <div class="grp-h"><span class="dot ok"></span>Finished, ready to review <span class="c">0</span></div>
+            <p class="small" style="padding:4px 10px">Nothing to review.</p>
+          </div>
+          <div class="grp">
+            <div class="grp-h"><span class="dot work"></span>Working <span class="c">1</span></div>
+            <div class="orow" data-go="lead"><span class="dot work"></span><span class="seatn">advisor.lead <span>· kernel</span></span><span class="what">Reading replies from queue.worker and operator.agent</span><span class="when">running 1 h 40 m</span><span class="act"><button class="btn ghost sm">Open</button></span></div>
+          </div>
+          <div class="grp">
+            <div class="grp-h"><span class="dot"></span>Idle <span class="c">2</span></div>
+            <div class="orow"><span class="dot"></span><span class="seatn">operator.human <span>· kernel</span></span><span class="what">Terminal seat</span><span class="when"></span><span class="act"></span></div>
+            <div class="orow"><span class="dot"></span><span class="seatn">dev.review <span>· starter</span></span><span class="what">Stopped with the rig</span><span class="when"></span><span class="act"></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GRAPH -->
+    <section class="screen" data-screen="graph">
+      <div class="top">
+        <div class="crumb">kernel</div><span class="tag">rig</span>
+        <span class="stat hide-p"><span class="dot ok"></span>Running · 1 h 40 m</span>
+        <div class="tabs">
+          <button class="tab" data-go="lead"><svg class="i s"><use href="#i-chat"/></svg>Chat</button>
+          <button class="tab on"><svg class="i s"><use href="#i-graph"/></svg>Graph</button>
+          <button class="tab" data-go="terminal"><svg class="i s"><use href="#i-term"/></svg>Terminal</button>
+          <button class="tab" data-go="specs"><svg class="i s"><use href="#i-filecode"/></svg>Specs</button>
+          <button class="tab" data-go="browser"><svg class="i s"><use href="#i-globe"/></svg>Browser</button>
+        </div>
+        <span class="grow"></span>
+        <button class="btn ghost sm hide-p"><svg class="i s"><use href="#i-camera"/></svg>Snapshot</button>
+        <button class="btn ghost sm hide-p"><svg class="i s"><use href="#i-power"/></svg>Rig down</button>
+      </div>
+      <div class="graphwrap">
+        <svg class="g" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid meet" font-family="Segoe UI Variable Text, Segoe UI, system-ui" font-size="12">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="var(--ink3)"/></marker>
+          </defs>
+          <!-- pods -->
+          <rect x="330" y="40" width="240" height="130" rx="12" fill="var(--g2)"/>
+          <text x="346" y="64" fill="var(--ink3)" font-weight="600">Advisor</text>
+          <rect x="60" y="300" width="380" height="140" rx="12" fill="var(--g2)"/>
+          <text x="76" y="324" fill="var(--ink3)" font-weight="600">Operator</text>
+          <rect x="520" y="300" width="240" height="140" rx="12" fill="var(--g2)"/>
+          <text x="536" y="324" fill="var(--ink3)" font-weight="600">Queue</text>
+          <!-- edges -->
+          <path d="M420 150 C 380 230, 220 260, 190 350" stroke="var(--ink3)" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+          <text x="232" y="240" fill="var(--ink3)" font-size="11">delegates_to</text>
+          <path d="M470 150 C 520 230, 620 250, 632 350" stroke="var(--ink3)" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+          <text x="560" y="228" fill="var(--ink3)" font-size="11">delegates_to</text>
+          <path d="M680 350 C 720 250, 640 150, 562 128" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="5 4" fill="none" marker-end="url(#ar)"/>
+          <text x="700" y="232" fill="var(--warn)" font-size="11">escalates_to</text>
+          <path d="M268 384 L 298 384" stroke="var(--ink3)" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+          <path d="M268 400 L 298 400" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="5 4" fill="none" marker-end="url(#ar)"/>
+          <text x="236" y="428" fill="var(--ink3)" font-size="10.5">collaborates · escalates</text>
+          <!-- nodes -->
+          <g data-go="lead" style="cursor:pointer"><rect x="350" y="80" width="200" height="72" rx="9" fill="var(--g3)" stroke="var(--acc)" stroke-width="1.5"/>
+          <circle cx="368" cy="102" r="4" fill="var(--acc)"/><text x="380" y="106" fill="var(--ink)" font-weight="600">advisor.lead</text>
+          <text x="368" y="126" fill="var(--ink3)" font-size="11">Claude Code · lead · working</text></g>
+          <g><rect x="80" y="344" width="188" height="72" rx="9" fill="var(--g3)"/>
+          <circle cx="98" cy="366" r="4" fill="var(--warn)"/><text x="110" y="370" fill="var(--ink)" font-weight="600">operator.agent</text>
+          <text x="98" y="390" fill="var(--ink3)" font-size="11">Claude Code · waiting</text></g>
+          <g data-go="terminal" style="cursor:pointer"><rect x="300" y="344" width="124" height="72" rx="9" fill="var(--g3)"/>
+          <circle cx="318" cy="366" r="4" fill="var(--idle)"/><text x="330" y="370" fill="var(--ink)" font-weight="600">human</text>
+          <text x="318" y="390" fill="var(--ink3)" font-size="11">Terminal · idle</text></g>
+          <g data-go="thread" style="cursor:pointer"><rect x="540" y="344" width="200" height="72" rx="9" fill="var(--g3)"/>
+          <circle cx="558" cy="366" r="4" fill="var(--warn)"/><text x="570" y="370" fill="var(--ink)" font-weight="600">queue.worker</text>
+          <text x="558" y="390" fill="var(--ink3)" font-size="11">Claude Code · waiting on you</text></g>
+        </svg>
+        <div class="gtools"><button class="ib"><svg class="i"><use href="#i-plus"/></svg></button><button class="ib"><svg class="i"><use href="#i-refresh"/></svg></button></div>
+        <div class="legend"><span><i class="dot work"></i>Working</span><span><i class="dot wait"></i>Waiting</span><span><i class="dot"></i>Idle</span><span><i class="dot err"></i>Error</span><span>Click a seat to open it</span></div>
+      </div>
+    </section>
+
+    <!-- TERMINAL -->
+    <section class="screen" data-screen="terminal">
+      <div class="top">
+        <div class="crumb"><span class="p">kernel</span><svg class="i s" style="color:var(--ink3)"><use href="#i-chev"/></svg>queue.worker</div>
+        <span class="tag">Claude Code</span>
+        <div class="tabs">
+          <button class="tab" data-go="thread"><svg class="i s"><use href="#i-chat"/></svg>Chat</button>
+          <button class="tab" data-go="graph"><svg class="i s"><use href="#i-graph"/></svg>Graph</button>
+          <button class="tab on"><svg class="i s"><use href="#i-term"/></svg>Terminal</button>
+          <button class="tab" data-go="specs"><svg class="i s"><use href="#i-filecode"/></svg>Specs</button>
+          <button class="tab" data-go="browser"><svg class="i s"><use href="#i-globe"/></svg>Browser</button>
+        </div>
+        <span class="grow"></span>
+        <button class="btn ghost sm hide-p"><svg class="i s"><use href="#i-copy"/></svg>Copy attach command</button>
+      </div>
+      <div class="term">
+        <div class="termbar">
+          <span class="mono">queue-worker@kernel</span>
+          <span class="ro"><svg class="i s"><use href="#i-lock"/></svg>Read only</span>
+          <span class="grow"></span>
+          <span>Take control</span><button class="switch" id="takeCtl"></button>
+        </div>
+        <div class="tty"><span class="c4">╭──────────────────────────────────────────────────────────────╮</span>
+<span class="c4">│</span> <span class="c1">✻</span> Claude Code                                                 <span class="c4">│</span>
+<span class="c4">│</span>   cwd: /home/doole/.openrig/workspace                          <span class="c4">│</span>
+<span class="c4">╰──────────────────────────────────────────────────────────────╯</span>
+
+<span class="c3">●</span> Bash(npm test -- --run)
+  <span class="c4">⎿</span>  <span class="c5">✗</span> test/tokenizer.spec.ts (28) 2 failed
+     Tests  2 failed | 130 passed (132)
+
+<span class="c3">●</span> Read(src/parser/tokenizer.ts)
+  <span class="c4">⎿</span>  Read 41 lines
+
+<span class="c3">●</span> Update(src/parser/tokenizer.ts)
+  <span class="c4">⎿</span>  Updated src/parser/tokenizer.ts with 3 additions and 1 removal
+
+<span class="c2">╭──────────────────────────────────────────────────────────────╮</span>
+<span class="c2">│</span> Bash command                                                 <span class="c2">│</span>
+<span class="c2">│</span>                                                              <span class="c2">│</span>
+<span class="c2">│</span>   npm test -- --run test/tokenizer.spec.ts                   <span class="c2">│</span>
+<span class="c2">│</span>                                                              <span class="c2">│</span>
+<span class="c2">│</span> Do you want to proceed?                                      <span class="c2">│</span>
+<span class="c2">│</span> <span class="c1">❯ 1. Yes</span>                                                     <span class="c2">│</span>
+<span class="c2">│</span>   2. Yes, and don't ask again for npm test commands          <span class="c2">│</span>
+<span class="c2">│</span>   3. No, and tell Claude what to do differently (esc)        <span class="c2">│</span>
+<span class="c2">╰──────────────────────────────────────────────────────────────╯</span>
+<span class="cur"> </span></div>
+      </div>
+    </section>
+
+    <!-- SPECS -->
+    <section class="screen" data-screen="specs">
+      <div class="top">
+        <div class="crumb">kernel</div><span class="tag">rig</span>
+        <div class="tabs">
+          <button class="tab" data-go="lead"><svg class="i s"><use href="#i-chat"/></svg>Chat</button>
+          <button class="tab" data-go="graph"><svg class="i s"><use href="#i-graph"/></svg>Graph</button>
+          <button class="tab" data-go="terminal"><svg class="i s"><use href="#i-term"/></svg>Terminal</button>
+          <button class="tab on"><svg class="i s"><use href="#i-filecode"/></svg>Specs</button>
+          <button class="tab" data-go="browser"><svg class="i s"><use href="#i-globe"/></svg>Browser</button>
+        </div>
+        <span class="grow"></span>
+        <button class="btn ghost sm hide-p"><svg class="i s"><use href="#i-download"/></svg>Export bundle</button>
+      </div>
+      <div class="specs">
+        <div class="specfiles">
+          <div class="grp-l">Rig</div>
+          <button class="f on"><svg class="i s"><use href="#i-filecode"/></svg>rig.yaml<span class="mod"></span></button>
+          <button class="f"><svg class="i s"><use href="#i-file"/></svg>culture/CULTURE.md</button>
+          <div class="grp-l">Agents</div>
+          <button class="f"><svg class="i s"><use href="#i-filecode"/></svg>advisor/lead</button>
+          <button class="f"><svg class="i s"><use href="#i-filecode"/></svg>operator/agent</button>
+          <button class="f"><svg class="i s"><use href="#i-filecode"/></svg>queue/worker</button>
+          <div class="grp-l">Pod guidance</div>
+          <button class="f"><svg class="i s"><use href="#i-file"/></svg>advisor</button>
+          <button class="f"><svg class="i s"><use href="#i-file"/></svg>operator</button>
+          <button class="f"><svg class="i s"><use href="#i-file"/></svg>queue</button>
+        </div>
+        <div class="editor">
+          <div class="edbar"><span class="mono">rig.yaml</span><span class="small">· edited, not saved</span><span class="grow"></span><span class="valid"><svg class="i s"><use href="#i-check"/></svg>Valid against OpenRig's RigSpec check</span></div>
+          <div class="code">
+<div class="cl"><span class="n">1</span><span><span class="y-k">version</span>: <span class="y-s">"0.2"</span></span></div>
+<div class="cl"><span class="n">2</span><span><span class="y-k">name</span>: kernel</span></div>
+<div class="cl"><span class="n">3</span><span><span class="y-k">culture_file</span>: culture/CULTURE.md</span></div>
+<div class="cl"><span class="n">4</span><span><span class="y-k">pods</span>:</span></div>
+<div class="cl"><span class="n">5</span><span>  - <span class="y-k">id</span>: advisor</span></div>
+<div class="cl"><span class="n">6</span><span>    <span class="y-k">label</span>: Advisor</span></div>
+<div class="cl"><span class="n">7</span><span>    <span class="y-k">members</span>:</span></div>
+<div class="cl"><span class="n">8</span><span>      - <span class="y-k">id</span>: lead</span></div>
+<div class="cl"><span class="n">9</span><span>        <span class="y-k">agent_ref</span>: local:agents/advisor/lead</span></div>
+<div class="cl"><span class="n">10</span><span>        <span class="y-k">runtime</span>: claude-code</span></div>
+<div class="cl"><span class="n">11</span><span>        <span class="y-k">restore_policy</span>: resume_if_possible</span></div>
+<div class="cl"><span class="n">12</span><span>  - <span class="y-k">id</span>: queue</span></div>
+<div class="cl"><span class="n">13</span><span>    <span class="y-k">label</span>: Queue</span></div>
+<div class="cl"><span class="n">14</span><span>    <span class="y-k">members</span>:</span></div>
+<div class="cl"><span class="n">15</span><span>      - <span class="y-k">id</span>: worker</span></div>
+<div class="cl"><span class="n">16</span><span>        <span class="y-k">agent_ref</span>: local:agents/queue/worker</span></div>
+<div class="cl"><span class="n">17</span><span>        <span class="y-k">runtime</span>: claude-code</span></div>
+<div class="cl chg"><span class="n">18</span><span>      - <span class="y-k">id</span>: worker2</span></div>
+<div class="cl chg"><span class="n">19</span><span>        <span class="y-k">agent_ref</span>: local:agents/queue/worker</span></div>
+<div class="cl chg"><span class="n">20</span><span>        <span class="y-k">runtime</span>: codex</span></div>
+<div class="cl"><span class="n">21</span><span><span class="y-k">edges</span>:</span></div>
+<div class="cl"><span class="n">22</span><span>  - <span class="y-k">kind</span>: delegates_to</span></div>
+<div class="cl"><span class="n">23</span><span>    <span class="y-k">from</span>: advisor.lead</span></div>
+<div class="cl"><span class="n">24</span><span>    <span class="y-k">to</span>: queue.worker</span></div>
+<div class="cl"><span class="n">25</span><span>  - <span class="y-k">kind</span>: escalates_to</span></div>
+<div class="cl"><span class="n">26</span><span>    <span class="y-k">from</span>: queue.worker</span></div>
+<div class="cl"><span class="n">27</span><span>    <span class="y-k">to</span>: advisor.lead</span></div>
+<div class="cl"><span class="n">28</span><span class="y-c">  # operator pod and its edges folded</span></div>
+          </div>
+          <div class="edfoot"><span class="small">Saving shows a diff first. Seat changes apply at the next rig up.</span><span class="grow"></span><button class="btn ghost">Discard</button><button class="btn pri"><svg class="i s"><use href="#i-diff"/></svg>Review and save</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BROWSER -->
+    <section class="screen" data-screen="browser">
+      <div class="top">
+        <div class="crumb">kernel</div><span class="tag">Browser · in-app</span>
+        <div class="tabs">
+          <button class="tab" data-go="lead"><svg class="i s"><use href="#i-chat"/></svg>Chat</button>
+          <button class="tab" data-go="graph"><svg class="i s"><use href="#i-graph"/></svg>Graph</button>
+          <button class="tab" data-go="terminal"><svg class="i s"><use href="#i-term"/></svg>Terminal</button>
+          <button class="tab" data-go="specs"><svg class="i s"><use href="#i-filecode"/></svg>Specs</button>
+          <button class="tab on"><svg class="i s"><use href="#i-globe"/></svg>Browser</button>
+        </div>
+        <span class="grow"></span>
+        <button class="btn ghost sm hide-p"><svg class="i s"><use href="#i-panel"/></svg>Pop out</button>
+        <button class="ib hide-p"><svg class="i"><use href="#i-more"/></svg></button>
+      </div>
+      <div class="bwrap">
+        <div class="btabs">
+          <div class="btab on"><span class="dot work"></span>Parser playground<svg class="i s x"><use href="#i-x"/></svg></div>
+          <div class="btab"><svg class="i s"><use href="#i-globe"/></svg>OpenRig docs<svg class="i s x"><use href="#i-x"/></svg></div>
+          <button class="ib" style="width:26px;height:26px"><svg class="i s"><use href="#i-plus"/></svg></button>
+        </div>
+        <div class="bbar">
+          <button class="ib"><svg class="i s"><use href="#i-left"/></svg></button>
+          <button class="ib"><svg class="i s"><use href="#i-right"/></svg></button>
+          <button class="ib"><svg class="i s"><use href="#i-refresh"/></svg></button>
+          <div class="addr"><svg class="i s" style="color:var(--ink3)"><use href="#i-lock"/></svg><span><span class="host">localhost:5173</span><span class="path">/playground</span></span></div>
+          <span class="driving"><span class="dot work"></span><span class="txt">queue.worker is driving</span></span>
+          <button class="btn sm"><svg class="i s"><use href="#i-hand"/></svg>Take control</button>
+        </div>
+        <div class="bbody">
+          <div class="site">
+            <h3>Parser playground</h3>
+            <div class="sub">Paste input, run the tokenizer, see the tokens.</div>
+            <label>Input</label>
+            <div class="ta">"hello\</div>
+            <span class="run">Run</span>
+            <div class="out"><span class="e">UnterminatedEscape: escape at end of input (offset 0)</span><br>tokens: []</div>
+          </div>
+          <div class="alog">
+            <div class="h"><span>AI actions</span><span class="small">queue.worker</span></div>
+            <div class="list">
+              <div class="act"><span class="tm">10:54</span><div><div class="tl">Opened a tab</div><div class="ar">localhost:5173/playground</div></div></div>
+              <div class="act"><span class="tm">10:54</span><div><div class="tl">Read the page</div><div class="ar">snapshot · 14 elements</div></div></div>
+              <div class="act"><span class="tm">10:55</span><div><div class="tl">Typed into Input</div><div class="ar">"hello\</div></div></div>
+              <div class="act"><span class="tm">10:55</span><div><div class="tl">Clicked Run</div><div class="ar">button "Run"</div></div></div>
+              <div class="act"><span class="tm">10:55</span><div><div class="tl">Read the page</div><div class="ar">error text found</div></div></div>
+              <div class="act wait"><span class="tm">10:56</span><div><div class="tl">Waiting for you</div><div class="ar">click button "Run" again</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="confirm">
+          <div class="q"><svg class="i"><use href="#i-shield"/></svg>queue.worker wants to click <b>Run</b> on localhost:5173</div>
+          <button class="btn pri sm"><svg class="i s"><use href="#i-check"/></svg>Allow</button>
+          <button class="btn sm">Allow all AI actions</button>
+          <button class="btn ghost sm"><svg class="i s"><use href="#i-x"/></svg>Deny</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="screen" data-screen="settings">
+      <div class="settings">
+        <nav class="setnav">
+          <div class="h">Settings</div>
+          <button class="nrow on">General</button>
+          <button class="nrow">Connection</button>
+          <button class="nrow">Local models</button>
+          <button class="nrow">Memory and code</button>
+          <button class="nrow">Browser</button>
+          <button class="nrow">Keybinds</button>
+          <button class="nrow">Updates</button>
+          <button class="nrow">About</button>
+        </nav>
+        <div class="setbody">
+          <div class="sec"><h2>General</h2>
+            <div class="srow"><div><div class="l">Theme</div><div class="d">Applies straight away.</div></div><div class="seg"><span>Light</span><span class="on">Dark</span><span>System</span></div></div>
+            <div class="srow"><div><div class="l">Send with</div><div class="d">Shift+Enter always adds a new line.</div></div><div class="seg"><span class="on">Enter</span><span>Ctrl+Enter</span></div></div>
+            <div class="srow last"><div><div class="l">Notify me when a seat needs me</div><div class="d">Desktop notification for approvals, questions and errors.</div></div><div class="right-end"><button class="switch on"></button></div></div>
+          </div>
+          <div class="sec"><h2>Connection</h2>
+            <div class="srow"><div><div class="l">Find the daemon</div><div class="d">Auto checks WSL on Windows and the local machine on Linux.</div></div><div class="seg"><span class="on">Auto</span><span>WSL</span><span>Native</span><span>Address</span></div></div>
+            <div class="srow"><div><div class="l">Daemon address</div><div class="d">Found in ~/.openrig/daemon.json inside WSL Ubuntu.</div></div><div class="right-end"><span class="inp">http://127.0.0.1:7433</span></div></div>
+            <div class="srow last"><div><div class="l">Status</div><div class="d">OpenRig 0.7.4 · 2 rigs · 6 seats</div></div><div class="right-end"><span class="stat"><span class="dot ok"></span>Connected</span><button class="btn sm">Test</button></div></div>
+          </div>
+          <div class="sec"><h2>Local models</h2>
+            <div class="srow"><div><div class="l">Local model server</div><div class="d">Any OpenAI-compatible server: Ollama, LM Studio, llama.cpp.</div></div><div class="right-end"><span class="inp">http://localhost:11434/v1</span></div></div>
+            <div class="srow"><div><div class="l">Models found</div><div class="d">Nothing answering at that address.</div></div><div class="right-end"><span class="stat"><span class="dot"></span>Not running</span><button class="btn sm">Check</button></div></div>
+            <div class="srow"><div><div class="l">Use for Hindsight memory</div><div class="d">Hindsight writes its pages with this model instead of a paid API.</div></div><div class="right-end"><button class="switch"></button></div></div>
+            <div class="srow last"><div><div class="l">Offer for new seats</div><div class="d">Seats on the Pi harness can pick a local model, if OpenRig allows it.</div></div><div class="right-end"><button class="switch"></button></div></div>
+          </div>
+          <div class="sec"><h2>Memory and code</h2>
+            <div class="srow"><div><div class="l">Hindsight</div><div class="d">Memory server for projects and seats.</div></div><div class="right-end"><span class="inp">http://localhost:8888</span><span class="dot ok"></span></div></div>
+            <div class="srow"><div><div class="l">CodeGraph</div><div class="d">codegraph 1.6.2 found on PATH.</div></div><div class="right-end"><span class="stat"><span class="dot ok"></span>Ready</span></div></div>
+            <div class="srow last"><div><div class="l">Give every seat these tools</div><div class="d">Adds the Hindsight and CodeGraph MCP servers when a seat starts.</div></div><div class="right-end"><button class="switch on"></button></div></div>
+          </div>
+          <div class="sec"><h2>Browser</h2>
+            <div class="srow"><div><div class="l">Seats can use a browser</div><div class="d">Seats get Playwright's browser tools through MCP.</div></div><div class="right-end"><button class="switch on"></button></div></div>
+            <div class="srow"><div><div class="l">Where it runs</div><div class="d">In-app: a browser tab you can watch and take over. Headless: a hidden browser for background work.</div></div><div class="seg"><span class="on">In-app</span><span>Headless</span></div></div>
+            <div class="srow"><div><div class="l">AI actions</div><div class="d">Ask shows Allow and Deny before each click or keystroke.</div></div><div class="seg"><span class="on">Ask</span><span>Allow all</span></div></div>
+            <div class="srow last"><div><div class="l">Seats in WSL can reach it</div><div class="d">WSL uses NAT networking here, so seats can't reach the app yet. Mirrored networking fixes it.</div></div><div class="right-end"><span class="stat"><span class="dot wait"></span>Not yet</span><button class="btn sm">Show steps</button></div></div>
+          </div>
+          <div class="sec"><h2>Keybinds</h2>
+            <table class="ktable">
+              <tr><td>Command palette</td><td><span class="key">Ctrl</span><span class="key">K</span></td></tr>
+              <tr><td>Interrupt seat</td><td><span class="key">Esc</span></td></tr>
+              <tr><td>Approve prompt</td><td><span class="key">Y</span></td></tr>
+              <tr><td>Deny prompt</td><td><span class="key">N</span></td></tr>
+              <tr><td>Next seat that needs me</td><td><span class="key rec">Press a key…</span></td></tr>
+              <tr><td>Toggle right panel</td><td><span class="key">Ctrl</span><span class="key">.</span></td></tr>
+              <tr><td>Open Overview</td><td><span class="key">Ctrl</span><span class="key">Shift</span><span class="key">O</span></td></tr>
+            </table>
+          </div>
+          <div class="sec"><h2>Updates</h2>
+            <div class="srow"><div><div class="l">RigApp 0.1.0</div><div class="d">Checks GitHub releases at start and every 4 hours.</div></div><div class="right-end"><button class="btn sm"><svg class="i s"><use href="#i-refresh"/></svg>Check for updates</button></div></div>
+            <div class="srow last"><div><div class="l">0.1.1 is ready to install</div><div class="d">Downloaded in the background. Installs when you restart.</div></div><div class="right-end"><button class="btn pri sm">Restart and install</button></div></div>
+            <div class="notes" style="margin-top:10px"><h3>RigApp 0.1.1</h3><h4>Fixed</h4><ul><li>Unread markers clear when you open a thread from Overview.</li><li>The terminal keeps its scroll position when a seat prints a lot at once.</li></ul></div>
+          </div>
+          <div class="sec"><h2>About</h2>
+            <div class="notice">Provided "as is", without warranty, under the MIT licence. To the extent permitted by law, the authors are not liable for any loss or damage from using it. Back up your work.<br><br>RigApp is not affiliated with or endorsed by OpenRig or T3 Tools. Its layout follows T3 Code.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- RIGHT PANEL -->
+  <aside class="right">
+    <div class="rtabs">
+      <button class="rtab on" data-r="seat">Seat</button>
+      <button class="rtab" data-r="files">Files</button>
+      <button class="rtab" data-r="memory"><svg class="i s"><use href="#i-memory"/></svg>Memory</button>
+      <button class="rtab" data-r="code"><svg class="i s"><use href="#i-code"/></svg>Code</button>
+    </div>
+    <div class="rpane on" data-rp="seat">
+      <div><div class="rh">Seat</div>
+        <dl class="kv">
+          <dt>Session</dt><dd class="mono" id="r-sess">advisor-lead@kernel</dd>
+          <dt>Harness</dt><dd>Claude Code</dd>
+          <dt>Pod</dt><dd id="r-pod">Advisor</dd>
+          <dt>Status</dt><dd><span class="stat" id="r-stat"><span class="dot work"></span>Running · active</span></dd>
+          <dt>Startup</dt><dd>ready</dd>
+          <dt>Restore</dt><dd>resume_if_possible</dd>
+          <dt>Agent</dt><dd class="mono" id="r-agent">local:agents/advisor/lead</dd>
+          <dt>Folder</dt><dd class="mono">/home/doole/.openrig/workspace</dd>
+        </dl>
+      </div>
+      <div><div class="rh">Links</div>
+        <dl class="kv">
+          <dt id="r-l1">Delegates to</dt><dd id="r-v1">operator.agent, queue.worker</dd>
+          <dt id="r-l2">Escalated by</dt><dd id="r-v2">queue.worker</dd>
+        </dl>
+      </div>
+      <div><div class="rh">Rig</div>
+        <dl class="kv">
+          <dt>Uptime</dt><dd>1 h 40 m</dd>
+          <dt>Snapshot</dt><dd>43 s ago · every 5 min</dd>
+        </dl>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn sm" data-go="terminal"><svg class="i s"><use href="#i-term"/></svg>Open terminal</button>
+        <button class="btn ghost sm"><svg class="i s"><use href="#i-copy"/></svg>Attach command</button>
+      </div>
+    </div>
+    <div class="rpane" data-rp="files">
+      <div class="field"><svg class="i s"><use href="#i-search"/></svg>Filter files</div>
+      <div class="flist">
+        <div class="rh">Changed by seats</div>
+        <div class="f"><svg class="i s"><use href="#i-filecode"/></svg>src/parser/tokenizer.ts<span class="m">queue.worker</span></div>
+        <div class="f"><svg class="i s"><use href="#i-file"/></svg>logs/import-0210.log<span class="m">read</span></div>
+        <div class="rh" style="margin-top:10px">Workspace</div>
+        <div class="f"><svg class="i s"><use href="#i-folder"/></svg>agents</div>
+        <div class="f"><svg class="i s"><use href="#i-folder"/></svg>culture</div>
+        <div class="f"><svg class="i s"><use href="#i-folder"/></svg>src</div>
+        <div class="f"><svg class="i s"><use href="#i-filecode"/></svg>rig.yaml</div>
+      </div>
+    </div>
+    <div class="rpane" data-rp="memory">
+      <div class="small"><span class="stat"><span class="dot ok"></span>Hindsight · bank kernel</span></div>
+      <div class="field"><svg class="i s"><use href="#i-search"/></svg>Search what this project remembers</div>
+      <div><div class="rh">Knowledge pages</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div class="kp"><div class="t">Key decisions and rationale</div><div class="s">Parser errors throw typed classes, never return null. Updated today.</div></div>
+          <div class="kp"><div class="t">Conventions and patterns</div><div class="s">Tests sit next to the file in test/, one spec per module.</div></div>
+          <div class="kp"><div class="t">Bundle imports</div><div class="s">The 02:10 job reads from the nightly export folder.</div></div>
+          <div class="kp"><div class="t">Initiatives</div><div class="s">Parser branch: escape handling rewrite.</div></div>
+        </div>
+      </div>
+      <div class="box small">Every seat in kernel gets this memory through the Hindsight tools. Memory pages run on: <b style="color:var(--ink)">local model</b> when one is set up in Settings.</div>
+    </div>
+    <div class="rpane" data-rp="code">
+      <div class="small"><span class="stat"><span class="dot ok"></span>CodeGraph · index 1 min old</span></div>
+      <div class="field"><svg class="i s"><use href="#i-search"/></svg>readString callers</div>
+      <div><div class="rh">readString · src/parser/tokenizer.ts:104</div>
+        <div class="pre" style="font-size:11px">104 function readString(src, at) {
+118   if (ch === "\\") {
+119     const next = src[i + 1];
+120     if (next === undefined)
+121       throw new UnterminatedEscape(at);</div>
+      </div>
+      <div><div class="rh">Called by</div>
+        <div class="flist">
+          <div class="f"><svg class="i s"><use href="#i-code"/></svg>nextToken<span class="m">tokenizer.ts:61</span></div>
+          <div class="f"><svg class="i s"><use href="#i-code"/></svg>peekString<span class="m">lexer.ts:203</span></div>
+        </div>
+      </div>
+      <div><div class="rh">Affects</div><div class="small">3 functions in 2 files, 2 test files.</div></div>
+    </div>
+  </aside>
+
+  <!-- SETUP (covers the whole window) -->
+  <div class="setup" id="setup">
+    <div class="in">
+      <h1>RigApp can't reach OpenRig yet</h1>
+      <p class="lede">RigApp drives the OpenRig daemon. On Windows the daemon runs inside WSL2 because it needs tmux. RigApp never installs anything for you; follow the steps, then press Check again.</p>
+      <div class="ostabs"><button class="tab on">Windows</button><button class="tab">Linux</button></div>
+      <div class="checks">
+        <div class="chk"><svg class="i okc"><use href="#i-check"/></svg><b>WSL2</b><span class="v">Installed · Ubuntu running</span></div>
+        <div class="chk"><svg class="i okc"><use href="#i-check"/></svg><b>tmux in Ubuntu</b><span class="v">/usr/bin/tmux</span></div>
+        <div class="chk"><svg class="i badc"><use href="#i-x"/></svg><b>OpenRig CLI</b><span class="v">rig not found in Ubuntu</span></div>
+        <div class="chk"><svg class="i badc"><use href="#i-x"/></svg><b>Daemon</b><span class="v">Nothing answering on 127.0.0.1:7433</span></div>
+      </div>
+      <div class="steps">
+        <div class="step"><div>Open Ubuntu from the Start menu.</div></div>
+        <div class="step"><div>Install OpenRig with Linux Node (not the Windows one):<div class="cmd"><span>npm install -g @openrig/cli</span><button class="ib"><svg class="i s"><use href="#i-copy"/></svg></button></div></div></div>
+        <div class="step"><div>Start the daemon:<div class="cmd"><span>rig daemon start</span><button class="ib"><svg class="i s"><use href="#i-copy"/></svg></button></div></div></div>
+        <div class="step"><div>Come back here and press Check again.</div></div>
+      </div>
+      <div style="display:flex;gap:8px"><button class="btn pri"><svg class="i s"><use href="#i-refresh"/></svg>Check again</button><button class="btn ghost">Use a different address</button></div>
+    </div>
+  </div>
+
+  <!-- PALETTE -->
+  <div class="scrim" id="palette">
+    <div class="palette">
+      <div class="q"><svg class="i"><use href="#i-search"/></svg>snap<span class="caret" style="display:inline-block;width:1.5px;height:16px;background:var(--ink)"></span></div>
+      <div class="grp-l">Rig actions</div>
+      <div class="it on"><svg class="i s"><use href="#i-camera"/></svg>Snapshot kernel<span class="r"><span class="key">Ctrl</span><span class="key">Shift</span><span class="key">S</span></span></div>
+      <div class="it"><svg class="i s"><use href="#i-play"/></svg>Restore starter from snapshot 10:55</div>
+      <div class="it"><svg class="i s"><use href="#i-power"/></svg>Rig down kernel (snapshot first)</div>
+      <div class="grp-l">Go to</div>
+      <div class="it"><svg class="i s"><use href="#i-chat"/></svg>queue.worker · kernel<span class="r"><span class="small">waiting on you</span></span></div>
+      <div class="foot"><span>↑↓ to move</span><span>Enter to run</span><span>Esc to close</span></div>
+    </div>
+  </div>
+
+  <!-- TAKE CONTROL DIALOG -->
+  <div class="scrim" id="takeDlg">
+    <div class="dialog">
+      <h3>Take control of queue-worker@kernel?</h3>
+      <p>Your keys go straight into this seat's tmux pane. The seat may be mid-task, and what you type can change files or answer its prompts. This can't be undone.</p>
+      <p class="small">Provided "as is", without warranty. Back up your work.</p>
+      <div class="acts"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" data-close data-take>Take control</button></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const frame=document.getElementById('frame');
+const screens=['lead','thread','overview','graph','terminal','specs','settings'];
+const titles={lead:'kernel · advisor.lead',thread:'kernel · queue.worker',overview:'Overview',graph:'kernel',terminal:'kernel · queue.worker',specs:'kernel · specs',memory:'kernel · advisor.lead',settings:'Settings',setup:'RigApp',palette:'kernel · advisor.lead',mention:'kernel · advisor.lead',browser:'kernel · browser'};
+function go(name){
+  let scr=name, rp=null;
+  if(name==='memory'){scr='lead';rp='memory'}
+  if(name==='palette'||name==='mention'){scr='lead'}
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.dataset.screen===scr));
+  frame.classList.toggle('noright',['overview','settings'].includes(scr));
+  document.getElementById('setup').classList.toggle('on',name==='setup');
+  document.getElementById('palette').classList.toggle('on',name==='palette');
+  document.getElementById('takeDlg').classList.remove('on');
+  document.querySelectorAll('.seat').forEach(s=>s.classList.remove('on'));
+  const seatFor={lead:'lead',memory:'lead',palette:'lead',mention:'lead',browser:'worker',thread:'worker',terminal:'worker'}[name];
+  if(seatFor) document.querySelector(`.seat[data-seat="${seatFor}"]`).classList.add('on');
+  document.querySelectorAll('.nrow[data-nav]').forEach(n=>n.classList.toggle('on',n.dataset.nav===scr));
+  document.getElementById('mention').style.display=name==='mention'?'block':'none';
+  setSeat(seatFor==='worker'?SEATS.worker:SEATS.lead);
+  setRight(rp||'seat');
+  document.getElementById('ptitle').textContent=titles[name]||'';
+  document.querySelectorAll('#mk [data-go]').forEach(b=>b.classList.toggle('on',b.dataset.go===name));
+}
+const SEATS={
+  lead:{sess:'advisor-lead@kernel',pod:'Advisor',stat:'<span class="dot work"></span>Running · active',agent:'local:agents/advisor/lead',l1:'Delegates to',v1:'operator.agent, queue.worker',l2:'Escalated by',v2:'queue.worker'},
+  worker:{sess:'queue-worker@kernel',pod:'Queue',stat:'<span class="dot wait"></span>Running · waiting on you',agent:'local:agents/queue/worker',l1:'Takes work from',v1:'advisor.lead',l2:'Escalates to',v2:'advisor.lead'}};
+function setSeat(d){for(const k of ['sess','pod','agent','l1','v1','l2','v2'])document.getElementById('r-'+k).textContent=d[k];document.getElementById('r-stat').innerHTML=d.stat}
+function setRight(r){
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.toggle('on',t.dataset.r===r));
+  document.querySelectorAll('.rpane').forEach(p=>p.classList.toggle('on',p.dataset.rp===r));
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-go]'); if(t){go(t.dataset.go);return}
+  const r=e.target.closest('.rtab'); if(r){setRight(r.dataset.r);return}
+  const tg=e.target.closest('[data-toggle]'); if(tg){tg.parentElement.classList.toggle('open');return}
+  if(e.target.closest('#takeCtl')){document.getElementById('takeDlg').classList.add('on');return}
+  const c=e.target.closest('[data-close]'); if(c){if(c.hasAttribute('data-take'))document.getElementById('takeCtl').classList.add('on');c.closest('.scrim').classList.remove('on');return}
+  if(e.target.classList.contains('scrim')) e.target.classList.remove('on');
+});
+document.getElementById('themeBtn').onclick=e=>{const l=document.documentElement.dataset.theme==='light';document.documentElement.dataset.theme=l?'':'light';e.target.textContent=l?'Light theme':'Dark theme'};
+document.getElementById('phoneBtn').onclick=e=>{const p=frame.classList.toggle('phone');e.target.classList.toggle('on',p)};
+const q=new URLSearchParams(location.search);
+if(q.get('theme')==='light'){document.documentElement.dataset.theme='light';document.getElementById('themeBtn').textContent='Dark theme'}
+if(q.get('phone')){frame.classList.add('phone');document.getElementById('phoneBtn').classList.add('on')}
+go(q.get('s')||'lead');
+</script>
+</body>
+</html>

@@ -9,9 +9,11 @@
     "build": "pnpm --filter @rigapp/web run build",
     "start": "pnpm --filter @rigapp/server run start",
     "test": "pnpm -r run test",
-    "typecheck": "pnpm -r run typecheck"
+    "typecheck": "pnpm -r run typecheck",
+    "test:e2e": "pnpm build && playwright test -c e2e"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "typescript": "^7.0.2"
   }
 }

@@ -168,26 +168,26 @@
 </div>
 
 <div class="box">
-  <div class="ms-head"><h3>Milestone 4 "Desktop and release"</h3><span class="state">Planned</span></div>
+  <div class="ms-head"><h3>Milestone 4 "Desktop and release"</h3><span class="state now">Built 2026-10-29, release waits for doole</span></div>
   <p class="why">Guide: <code>docs/milestone-4-guide.html</code></p>
   <ul class="check">
-    <li>Auto-update</li>
-    <li>Settings</li>
-    <li>Packages</li>
+    <li class="ticked">Auto-update</li>
+    <li class="ticked">Settings</li>
+    <li class="ticked">Packages</li>
     <li>Release</li>
   </ul>
   <div class="notes" data-key="m4"><label>Your notes on milestone 4</label><textarea></textarea></div>
 </div>
 
 <div class="box">
-  <div class="ms-head"><h3>Milestone 5 "Seat tools"</h3><span class="state">Planned</span></div>
+  <div class="ms-head"><h3>Milestone 5 "Seat tools"</h3><span class="state now">Panels built 2026-10-29; seat-side tools wait</span></div>
   <p class="why">Guide: <code>docs/milestone-5-guide.html</code></p>
   <ul class="check">
-    <li>Hindsight</li>
-    <li>CodeGraph</li>
+    <li class="ticked">Hindsight</li>
+    <li class="ticked">CodeGraph</li>
     <li>Browser</li>
     <li>Local models</li>
-    <li>Token cost</li>
+    <li class="ticked">Token cost</li>
   </ul>
   <div class="notes" data-key="m5"><label>Your notes on milestone 5</label><textarea></textarea></div>
 </div>
@@ -221,6 +221,12 @@
   <ul>
     <li>Pull requests to OpenRig for the missing routes: approvals, interrupt, spec update, structured messages. Opened only after doole OKs each one, once M1 shows which stopgaps hurt most. (from Claude, 2026-10-29)</li>
   </ul>
+  <h3>Seat tools, seat side (M5 second half)</h3>
+  <ul>
+    <li>Give one pod Hindsight or CodeGraph through <a href="https://forum.langchain.com/t/mcptoon-cli-that-cuts-mcp-tool-discovery-from-2034-to-62-tokens-97-reduction/4345">mcptoon</a>: seats call MCP tools from Bash only when needed, so no tool list rides on every turn (it claims about 97% fewer discovery tokens; to be measured on one seat first). Needs <code>pip install mcptoon</code> in WSL, so doole's OK. Adding an MCP server to one pod directly is not possible today: OpenRig only has <code>claude_mcp: none</code> as an opt-out, and kernel's seats share one folder's <code>.mcp.json</code>. (from doole, 2026-10-29)</li>
+    <li>Browser for seats: Operant's in-app browser with @playwright/mcp, Allow / Deny / Take control and an action log, or a headless browser in WSL. Needs the @playwright/mcp package and WSL mirrored networking. (from M5, 2026-10-29)</li>
+    <li>Local models: an OpenAI-compatible server for Hindsight (a Hindsight setting) and for Pi seats if OpenRig allows. (from M5, 2026-10-29)</li>
+  </ul>
   <h3>Lifecycle depth pass (after the M1 to M5 review)</h3>
   <ul>
     <li>Adopt running tmux sessions into a rig (<code>/api/discovery/*</code>), import and export bundles (<code>/api/bundles/*</code>), and editing AgentSpecs. Parked from M3 to keep it to what could be checked against the live daemon. (2026-10-29)</li>
@@ -244,6 +250,7 @@
 <h2 id="s8">8. Change log</h2>
 <div class="box">
   <ul>
+    <li>2026-10-29: M4 built: Electron app (bundled server, single instance, opens behind other windows), GitHub updater (start and every 4 hours), Settings (theme, daemon address, rebindable shortcuts, tools, updates, About with the notice), Windows installer. Security pass clean. Release (tag 0.1.0, GitHub release) waits for doole. M5 first half: Memory (Hindsight) and Code (CodeGraph) panels, off by default and costing seats nothing; seat-side tools, browser and local models parked, with mcptoon as the planned route for seat tools.</li>
     <li>2026-10-29: M3 built: Specs tab (CodeMirror 6, OpenRig validation, diff, save through /api/files/write signed as the rig's human), Rig tab (rig up with OpenRig's plan first, rig down with snapshot, snapshot list with restore, Claude usage windows and seat context), New project from OpenRig's spec library, log search in Ctrl+K. Adopt, bundles and AgentSpec editing parked.</li>
     <li>2026-10-29: M2 built: Graph tab (pods in rows by delegation, links routed and merged), Terminal tab (daemon socket when on, else a 3 s pane copy), Take control with a warning, Operant's xterm options. Added @xyflow/react, @xterm/xterm, @xterm/addon-fit.</li>
     <li>2026-10-29: M1 built: chat, composer, approvals and Stop, Overview with unread markers, Ctrl+K, Files tab, README and LICENSE, Vitest and Playwright tests. apps/desktop moved to M4; Codex and Pi chat parked until a real seat exists. Review open.</li>

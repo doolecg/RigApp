@@ -54,14 +54,14 @@
 
 <main>
 <h1>Milestone 4 "Desktop and release"</h1>
-<p class="status">State: Planned (proposed 2026-10-29, not approved)</p>
+<p class="status">State: Built 2026-10-29 except the release, which waits for your OK (section 4)</p>
 
 <div class="box first">
   <strong>Read this first</strong>
   <ul>
     <li>Goal: A packaged RigApp for Windows and Linux that updates itself from GitHub releases.</li>
     <li>Out of scope: Seat tools (M5); phone access.</li>
-    <li>Nothing here starts until you approve this guide.</li>
+    <li>Started 2026-10-29 under your "keep going" instruction, with Claude's recommendation: electron-builder and electron-updater.</li>
     <li>To change anything, write in the notes box under it, press Copy my notes, and paste to Claude.</li>
   </ul>
 </div>
@@ -69,10 +69,10 @@
 <h2>1. Parts</h2>
 <div class="box">
   <ul class="check">
-    <li><strong>Auto-update:</strong> checks at start and every 4 hours, downloads in the background, offers Restart and install; a Check for updates button with release notes as Markdown. Borrowed from Operant's updater.</li>
-    <li><strong>Settings:</strong> every option applied live and saved; theme; daemon address; keybinds rebindable with a key recorder (T3 Code's <code>keybindings.json</code> model); the notice in Settings and About.</li>
-    <li><strong>Packages:</strong> Windows installer first, then Linux (AppImage). Test runs open behind your windows.</li>
-    <li><strong>Release:</strong> security pass, release notes, tag <code>0.1.0</code>.</li>
+    <li class="ticked"><strong>Auto-update:</strong> checks at start and every 4 hours, downloads in the background, offers Restart and install; a Check for updates button with release notes as Markdown. Borrowed from Operant's updater.</li>
+    <li class="ticked"><strong>Settings:</strong> every option applied live and saved; theme; daemon address; keybinds rebindable with a key recorder (T3 Code's <code>keybindings.json</code> model); the notice in Settings and About.</li>
+    <li class="ticked"><strong>Packages:</strong> (Windows installer built; the Linux AppImage has to be built on Linux: <code>pnpm --filter @rigapp/desktop dist:linux</code>) Windows installer first, then Linux (AppImage). Test runs open behind your windows.</li>
+    <li><strong>Release:</strong> (security pass done and clean; release notes written; tagging and publishing wait for your OK) security pass, release notes, tag <code>0.1.0</code>.</li>
   </ul>
   <div class="notes" data-key="parts"><label>Your notes on the parts</label><textarea></textarea></div>
 </div>
@@ -87,7 +87,18 @@
 
 <h2>3. How to test each step</h2>
 <div class="box">
-  <p class="why">Added as each step is built.</p>
+  <h3 style="margin-top:0">Step: Desktop app</h3>
+  <ol>
+    <li>Run the <strong>Dev Run</strong> config in IntelliJ (or <code>pnpm desktop</code> in <code>E:\REPOS\AI TOOLS\RigApp</code>). It builds everything and opens the RigApp window behind your other windows.</li>
+    <li>To try the installer: run <code>E:\REPOS\AI TOOLS\RigApp\apps\desktop\release\RigApp-0.1.0-windows-x64.exe</code>. Windows SmartScreen warns because it is not signed: click More info, then Run anyway.</li>
+  </ol>
+  <h3>Step: Settings</h3>
+  <ol>
+    <li>Click <strong>Settings</strong> at the bottom of the sidebar (or Ctrl+,).</li>
+    <li>Pick Light or Dark: the whole app changes straight away.</li>
+    <li>Click the shortcut next to "Open the command palette", press Ctrl+Shift+P: it is saved, and Ctrl+Shift+P now opens the palette. The arrow button resets it.</li>
+    <li>In the desktop app, Updates says "You have the newest version" until a newer GitHub release exists; then it downloads it and offers Restart and install.</li>
+  </ol>
 </div>
 
 <h2>4. Review checklist (about 30 minutes)</h2>

@@ -29,8 +29,12 @@ Open http://127.0.0.1:7480. That's it: your rigs show in the sidebar. If OpenRig
 | Command palette | Ctrl+K finds any seat or action |
 | Files | A read-only look at a seat's working folder |
 | Setup checks | WSL2, tmux, the `rig` CLI and the daemon, each with the fix |
+| Graph and terminal | Each rig's pods, seats and links; each seat's screen, with Take control |
+| Specs and lifecycle | Edit rig.yaml and CULTURE.md (checked by OpenRig), rig up and down, snapshots and restore, usage, new projects |
+| Desktop app | A Windows app that updates itself from GitHub releases; Settings for theme, daemon address and shortcuts |
+| Memory and Code | Optional panels that search a project's Hindsight memory or ask CodeGraph about a seat's code |
 
-Not built yet: the topology graph, a live terminal, spec editing, rig up and down, the desktop app and its updater, and seat tools. See `docs/bible.html`.
+Not built yet: tools for the seats themselves (Hindsight and CodeGraph inside a pod, a browser, local models), adopting tmux sessions, bundles, and chat for Codex and Pi seats. See `docs/bible.html`.
 
 ## Common commands
 
@@ -40,15 +44,18 @@ pnpm build        # build the web UI into apps/web/dist
 pnpm start        # run the server, which serves the built UI on http://127.0.0.1:7480
 pnpm test         # Vitest tests (recorded real OpenRig responses)
 pnpm typecheck    # TypeScript checks for every package
+pnpm test:e2e     # Playwright UI tests against your live rigs, in a hidden browser
+pnpm desktop      # build and open the desktop app
+pnpm dist:win     # build the Windows installer into apps/desktop/release
 ```
 
 ## Install
 
-Clone and build as above. On Windows the OpenRig daemon must run inside WSL2 (OpenRig does not support native Windows); RigApp runs on Windows itself and reaches the daemon on `127.0.0.1`. On Linux everything runs locally.
+Windows: run the installer from the GitHub release (it is not code-signed, so SmartScreen asks first: More info, then Run anyway), or build it with `pnpm dist:win`. Linux: `pnpm --filter @rigapp/desktop dist:linux` on a Linux machine makes an AppImage. The browser version: clone and build as above. On Windows the OpenRig daemon must run inside WSL2 (OpenRig does not support native Windows); RigApp runs on Windows itself and reaches the daemon on `127.0.0.1`. On Linux everything runs locally.
 
 ## Configuration
 
-RigApp needs no config file. Three environment variables change where it looks:
+Everything is in Settings inside the app (saved to `settings.json` in RigApp's data folder). For the browser version, environment variables do the same:
 
 ```
 RIGAPP_DAEMON_URL=http://127.0.0.1:7433   # the OpenRig daemon (default: the port in ~/.openrig/daemon.json, else 7433)
@@ -60,7 +67,7 @@ The first thing people hit: RigApp must reach the daemon from its own server, ne
 
 ## Privacy
 
-Nothing leaves your machine. RigApp talks only to the OpenRig daemon on `127.0.0.1` and reads seat session files and folders read-only through WSL. It sends text to a seat only when you press Send, and presses Enter or Esc in a seat only when you press Approve, Deny or Stop.
+RigApp talks to the OpenRig daemon on `127.0.0.1` and reads seat session files and folders read-only through WSL. The desktop app also asks GitHub for new releases. The Memory panel talks to Hindsight on your machine, and only once you turn it on. Nothing else leaves your machine. It sends text to a seat only when you press Send, and presses Enter or Esc in a seat only when you press Approve, Deny or Stop.
 
 ## Docs
 

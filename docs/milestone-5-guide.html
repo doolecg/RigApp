@@ -54,14 +54,14 @@
 
 <main>
 <h1>Milestone 5 "Seat tools"</h1>
-<p class="status">State: Planned (proposed 2026-10-29, not approved)</p>
+<p class="status">State: Partly built 2026-10-29: the Memory and Code panels. Seat-side tools wait (see section 1)</p>
 
 <div class="box first">
   <strong>Read this first</strong>
   <ul>
     <li>Goal: Give chosen pods Hindsight memory, CodeGraph and a browser, and let seats and Hindsight use local models, without adding tokens to seats that do not need them.</li>
     <li>Out of scope: Anything that injects prompts into seats by default.</li>
-    <li>Nothing here starts until you approve this guide.</li>
+    <li>Started 2026-10-29 under your "keep going" instruction. Built first: the parts that are for you and cost seats nothing.</li>
     <li>To change anything, write in the notes box under it, press Copy my notes, and paste to Claude.</li>
   </ul>
 </div>
@@ -69,11 +69,11 @@
 <h2>1. Parts</h2>
 <div class="box">
   <ul class="check">
-    <li><strong>Hindsight:</strong> detect the server, a Memory panel (search, knowledge pages), and the Hindsight MCP for pods you pick.</li>
-    <li><strong>CodeGraph:</strong> detect the CLI, a Code panel (explore a symbol, callers), and the CodeGraph MCP for pods you pick.</li>
-    <li><strong>Browser:</strong> Operant's browser brought over: an in-app browser tab seats can drive through <code>@playwright/mcp</code>, with Allow, Allow all, Deny, Take control and an action log; or a headless browser in WSL for background work.</li>
-    <li><strong>Local models:</strong> any OpenAI-compatible server (Ollama, LM Studio, llama.cpp) for Hindsight, and for Pi seats if OpenRig allows it.</li>
-    <li><strong>Token cost:</strong> each tool shows roughly what its tool list costs a seat per turn, and nothing is on until you turn it on.</li>
+    <li class="ticked"><strong>Hindsight:</strong> (Memory panel built; the MCP for seats waits for the per-pod route below) detect the server, a Memory panel (search, knowledge pages), and the Hindsight MCP for pods you pick.</li>
+    <li class="ticked"><strong>CodeGraph:</strong> (Code panel built; the MCP for seats waits for the per-pod route below) detect the CLI, a Code panel (explore a symbol, callers), and the CodeGraph MCP for pods you pick.</li>
+    <li><strong>Browser:</strong> (not built: needs @playwright/mcp and WSL mirrored networking on your PC; parked in the bible idea map) Operant's browser brought over: an in-app browser tab seats can drive through <code>@playwright/mcp</code>, with Allow, Allow all, Deny, Take control and an action log; or a headless browser in WSL for background work.</li>
+    <li><strong>Local models:</strong> (not built: Hindsight's model is Hindsight's own setting, and OpenRig decides Pi seats' models; parked) any OpenAI-compatible server (Ollama, LM Studio, llama.cpp) for Hindsight, and for Pi seats if OpenRig allows it.</li>
+    <li class="ticked"><strong>Token cost:</strong> (both panels are off until you turn them on in Settings, and add nothing to any seat; per-seat costs come with the per-pod route) each tool shows roughly what its tool list costs a seat per turn, and nothing is on until you turn it on.</li>
   </ul>
   <div class="notes" data-key="parts"><label>Your notes on the parts</label><textarea></textarea></div>
 </div>
@@ -89,7 +89,13 @@
 
 <h2>3. How to test each step</h2>
 <div class="box">
-  <p class="why">Added as each step is built.</p>
+  <h3 style="margin-top:0">Step: Memory and Code panels</h3>
+  <ol>
+    <li>Open Settings, turn on "Memory panel" and "Code panel" under Tools.</li>
+    <li>Open a seat: the right panel gains Memory and Code tabs.</li>
+    <li>Memory: pick the project's bank (RigApp guesses it from the seat's folder), type a question, press Enter: Hindsight's matching memories show.</li>
+    <li>Code: type a symbol or question, press Enter: CodeGraph's answer for the seat's folder shows.</li>
+  </ol>
 </div>
 
 <h2>4. Review checklist (about 30 minutes)</h2>

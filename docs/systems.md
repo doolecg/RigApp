@@ -74,11 +74,17 @@ Things RigApp needs that have no route. Each has a stopgap; each is a candidate 
 - **Built so far:** sidebar, chat, composer (`@` seat, `/` actions), approval card, Overview, Ctrl+K palette (cmdk), Seat and Files tabs. `lib/seen.ts` keeps when you last opened each seat; a seat whose daemon `lastActivityAt` is newer is "finished" and gets an unread dot. Playwright tests in `e2e/` run two servers on 7490 (live daemon) and 7491 (no daemon).
 - **Saved:** UI state (panel sizes, last open thread, last seen per seat) in local storage.
 
-## Desktop shell (planned, `apps/desktop`)
+## Desktop shell (`apps/desktop`)
 - **What it does:** Electron window; starts the server as a child process, loads it, auto-updates from GitHub releases, hosts the in-app browser (M5).
 - **Where:** `apps/desktop`. Packaged for Windows first, then Linux.
 - **Talks to:** RigApp server (loopback), GitHub releases.
+- **Built:** Vite bundles the server (`dist/server.mjs`, run with Electron's own Node via `ELECTRON_RUN_AS_NODE`), main and preload. Main finds a free port from 7480, passes `RIGAPP_PORT`, `RIGAPP_WEB_DIST`, `RIGAPP_DATA_DIR` and `RIGAPP_VERSION`, opens the window with `showInactive()`, keeps one instance, opens outside links in the browser and kills the server on quit. `src/updater.ts` (electron-updater, GitHub doolecg/RigApp) checks at start and every 4 hours and sends `UpdateState` through `window.rigapp` (`DesktopBridge` in contracts); a 404 (no release yet) counts as up to date. electron-builder makes the NSIS installer in `apps/desktop/release`.
 
-## Seat tools (planned, M5)
+## Settings and tool panels
+- **Settings:** `apps/server/src/settings.ts` keeps `settings.json` (theme, daemon address, changed shortcuts, tools) in `RIGAPP_DATA_DIR` (desktop: Electron's user data folder; otherwise `~/.rigapp`) and sends it in the shell; `settings.set` applies it at once. Shortcuts: defaults in `apps/web/src/lib/keys.ts`.
+- **Memory panel:** `apps/server/src/tools.ts` calls Hindsight at the Settings address: `GET /v1/default/banks`, `POST /v1/default/banks/{bank}/memories/recall`. Off by default.
+- **Code panel:** runs `codegraph explore <query>` in the seat's folder (`/mnt/x/...` becomes `X:\...`), calling the CLI's Node script directly so the query never passes through a shell. Off by default.
+
+## Seat tools (planned, M5 second half)
 - **What they do:** Hindsight memory, CodeGraph and a Playwright browser offered to seats through MCP, plus local models through any OpenAI-compatible server. Each is opt-in per pod with its token cost shown; nothing is added to a seat by default.
 - **Talks to:** Hindsight at `http://localhost:8888`, the `codegraph` CLI, `@playwright/mcp`, a local model server. Seats in WSL reach Windows-side tools only with WSL mirrored networking (this PC uses the default NAT mode today).

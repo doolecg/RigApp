@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, LayoutGrid, PanelLeft, Plus, Search } from "lucide-react";
+import { ChevronDown, ChevronRight, LayoutGrid, PanelLeft, Plus, Search, Settings } from "lucide-react";
 import { useState } from "react";
 import type { Project, Shell } from "@rigapp/contracts";
 import type { View } from "@/App";
@@ -18,10 +18,11 @@ interface Props {
   onSelect: (session: string) => void;
   onOverview: () => void;
   onSearch: () => void;
+  onSettings: () => void;
   onHide: () => void;
 }
 
-export function Sidebar({ shell, view, selected, onSelect, onOverview, onSearch, onHide }: Props) {
+export function Sidebar({ shell, view, selected, onSelect, onOverview, onSearch, onSettings, onHide }: Props) {
   const { daemon } = shell;
   const seen = useSeen();
   const count = needsYou(entries(shell, seen));
@@ -81,6 +82,16 @@ export function Sidebar({ shell, view, selected, onSelect, onOverview, onSearch,
           />
         ))}
       </nav>
+      <div className="px-2 pb-3">
+        <button
+          className={cn("flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-g2", view === "settings" && "bg-g3 hover:bg-g3")}
+          onClick={onSettings}
+        >
+          <Settings className="size-3.5 text-ink2" />
+          Settings
+          <span className="ml-auto text-xs text-ink3">{shell.version}</span>
+        </button>
+      </div>
     </aside>
   );
 }

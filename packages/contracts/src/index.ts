@@ -142,12 +142,46 @@ export interface SetupCheck {
   detail: string;
 }
 
+/** Where the desktop app's updater is; the web UI shows it in Settings and as a banner. */
+export interface UpdateState {
+  status: "idle" | "checking" | "none" | "downloading" | "ready" | "error";
+  /** The version found, when there is one. */
+  version?: string;
+  /** Release notes as Markdown, from the GitHub release. */
+  notes?: string;
+  percent?: number;
+  error?: string;
+}
+
+/** What the desktop app's preload exposes as `window.rigapp`. Absent in a plain browser. */
+export interface DesktopBridge {
+  version: string;
+  getUpdate(): Promise<UpdateState>;
+  onUpdate(listener: (state: UpdateState) => void): () => void;
+  checkForUpdates(): Promise<void>;
+  installUpdate(): void;
+}
+
+/** Saved in settings.json in RigApp's data folder and applied as soon as it changes. */
+export interface Settings {
+  theme: "system" | "dark" | "light";
+  /** Empty: find the daemon by itself (RIGAPP_DAEMON_URL, then ~/.openrig/daemon.json). */
+  daemonUrl: string;
+  /** Only the keys you changed, by command id; the UI holds the defaults. */
+  keybindings: Record<string, string>;
+  /** Panels that talk to local tools. Off until you turn them on; none of them adds anything to a seat. */
+  tools: { hindsight: boolean; hindsightUrl: string; codegraph: boolean };
+}
+
 export interface Shell {
   daemon: DaemonInfo;
   /** Filled while the daemon is unreachable, empty once it answers. */
   checks: SetupCheck[];
   platform: "windows" | "linux";
   projects: Project[];
+  settings: Settings;
+  /** RigApp's own version, from its package.json. */
+  version: string;
 }
 
 /** Server to UI. The shell is sent whole on connect and on every change. */
@@ -210,4 +244,10 @@ export type ClientMessage =
   /** Answers UsageWindow[]. */
   | { id: number; method: "usage" }
   /** Answers SearchHit[] from every seat's pane log. */
-  | { id: number; method: "search"; pattern: string };
+  | { id: number; method: "search"; pattern: string }
+  | { id: number; method: "settings.set"; patch: Partial<Settings> }
+  /** tools.banks answers string[]; tools.recall answers { id, text }[]. */
+  | { id: number; method: "tools.banks" }
+  | { id: number; method: "tools.recall"; bank: string; query: string }
+  /** Answers { folder, text }: CodeGraph's explore output for the seat's folder. */
+  | { id: number; method: "tools.explore"; session: string; query: string };

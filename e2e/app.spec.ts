@@ -152,3 +152,36 @@ test("New project checks a library spec with OpenRig before starting", async ({ 
   await expect(page.getByText("OpenRig can start it.", { exact: false })).toBeVisible({ timeout: 20_000 });
   await page.getByRole("button", { name: "Cancel" }).click();
 });
+
+test("Settings change the theme and a shortcut straight away", async ({ page }) => {
+  await open(page);
+  await page.getByRole("button", { name: /^Settings/ }).click();
+  await page.getByRole("radio", { name: "Light" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.getByRole("radio", { name: "Same as the system" }).click();
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme", /./);
+  await page.getByRole("button", { name: "Change the shortcut for Open the command palette" }).click();
+  await page.keyboard.press("Control+Shift+P");
+  await expect(page.getByRole("button", { name: "Change the shortcut for Open the command palette" })).toHaveText("Ctrl+Shift+P");
+  await page.keyboard.press("Control+Shift+P");
+  await expect(page.getByPlaceholder(/Type a seat/)).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Reset Open the command palette" }).click();
+  await expect(page.getByRole("button", { name: "Change the shortcut for Open the command palette" })).toHaveText("Ctrl+K");
+});
+
+test("the Memory panel searches Hindsight once it is turned on", async ({ page }) => {
+  await open(page);
+  await page.getByRole("button", { name: /^Settings/ }).click();
+  await page.getByLabel("Memory panel: search a project's Hindsight memory").click();
+  await expect(page.getByLabel("Memory panel: search a project's Hindsight memory")).toBeChecked();
+  await seatButton(page, "lead").click();
+  await page.getByRole("tab", { name: "Memory" }).click();
+  await page.getByLabel("Memory bank").selectOption("coding-agent::RigApp");
+  await page.getByLabel("Search what this project remembers").fill("session file");
+  await page.getByLabel("Search what this project remembers").press("Enter");
+  await expect(page.locator("aside li").first()).toBeVisible({ timeout: 60_000 });
+  await page.getByRole("button", { name: /^Settings/ }).click();
+  await page.getByLabel("Memory panel: search a project's Hindsight memory").click();
+  await expect(page.getByLabel("Memory panel: search a project's Hindsight memory")).not.toBeChecked();
+});

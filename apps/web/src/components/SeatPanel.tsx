@@ -6,6 +6,7 @@ import { useStored } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 import { FilesView } from "./FilesView";
 import { RigPanel } from "./RigPanel";
+import { CodePanel, MemoryPanel } from "./ToolPanels";
 import { Button } from "./ui/button";
 import { StatusDot } from "./StatusDot";
 
@@ -18,9 +19,24 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function SeatPanel({ project, seat, onHide }: { project: Project; seat: Seat; onHide?: () => void }) {
+export function SeatPanel({
+  project,
+  seat,
+  tools,
+  onHide,
+}: {
+  project: Project;
+  seat: Seat;
+  tools: { hindsight: boolean; codegraph: boolean };
+  onHide?: () => void;
+}) {
   const state = seatState(seat);
-  const [tab, setTab] = useStored<"seat" | "files" | "rig">("rigapp.panelTab", "seat");
+  const [chosenTab, setTab] = useStored<"seat" | "files" | "rig" | "memory" | "code">("rigapp.panelTab", "seat");
+  // Memory and Code show only while their tool is on in Settings.
+  const tabs = (["seat", "files", "rig", "memory", "code"] as const).filter(
+    (id) => (id !== "memory" || tools.hindsight) && (id !== "code" || tools.codegraph),
+  );
+  const tab = tabs.includes(chosenTab as (typeof tabs)[number]) ? chosenTab : "seat";
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     await navigator.clipboard.writeText(seat.attachCommand ?? "");
@@ -30,7 +46,7 @@ export function SeatPanel({ project, seat, onHide }: { project: Project; seat: S
   return (
     <aside className="h-full min-h-0 overflow-y-auto bg-g1 px-5 py-4">
       <div className="-mt-1 mb-3 flex items-center gap-1" role="tablist">
-        {(["seat", "files", "rig"] as const).map((id) => (
+        {tabs.map((id) => (
           <button
             key={id}
             role="tab"
@@ -38,7 +54,7 @@ export function SeatPanel({ project, seat, onHide }: { project: Project; seat: S
             className={cn("rounded-md px-2.5 py-1 text-ink2 hover:text-ink", tab === id && "bg-g3 text-ink")}
             onClick={() => setTab(id)}
           >
-            {id === "seat" ? "Seat" : id === "files" ? "Files" : "Rig"}
+            {{ seat: "Seat", files: "Files", rig: "Rig", memory: "Memory", code: "Code" }[id]}
           </button>
         ))}
         {onHide && (
@@ -51,6 +67,10 @@ export function SeatPanel({ project, seat, onHide }: { project: Project; seat: S
         <FilesView key={seat.session} seat={seat} />
       ) : tab === "rig" ? (
         <RigPanel key={project.id} project={project} />
+      ) : tab === "memory" ? (
+        <MemoryPanel key={project.id} project={project} />
+      ) : tab === "code" ? (
+        <CodePanel key={seat.session} seat={seat} />
       ) : (
         <>
           <dl className="grid grid-cols-[96px_1fr] gap-x-3 gap-y-1.5">

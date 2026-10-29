@@ -1,7 +1,14 @@
+import { readFileSync } from "node:fs";
 import type { Project, Seat, ServerMessage, Shell } from "@rigapp/contracts";
 import { health, loadProjects } from "./openrig/client.ts";
 import { followSse } from "./openrig/sse.ts";
+import { settings } from "./settings.ts";
 import { platform, runChecks } from "./setup.ts";
+
+// One version for the whole app: the desktop app passes its own, else the root package.json.
+const VERSION =
+  process.env.RIGAPP_VERSION ??
+  (JSON.parse(readFileSync(new URL("../../../package.json", import.meta.url), "utf8")) as { version: string }).version;
 
 // Streams that tell us something changed; on each frame we re-read /api/ps and
 // the seats, as the OpenRig TUI does. `replay=0` matters: without it the daemon
@@ -15,6 +22,8 @@ export class Hub {
     checks: [],
     platform,
     projects: [],
+    settings: settings(),
+    version: VERSION,
   };
   private distro: string | null = null;
   private json = "";
@@ -54,6 +63,13 @@ export class Hub {
     for (const project of this.shell.projects)
       for (const pod of project.pods) for (const seat of pod.seats) if (seat.session === session) return { project, seat };
     return undefined;
+  }
+
+  /** Settings changed: send them to every UI, and look for the daemon again if its address changed. */
+  settingsChanged(daemonMoved: boolean): void {
+    this.shell.settings = settings();
+    if (daemonMoved) void this.check();
+    else this.publish();
   }
 
   /** Re-read the daemon soon, e.g. right after RigApp changed something. */

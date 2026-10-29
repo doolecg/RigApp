@@ -24,8 +24,9 @@
   color-scheme: dark;
 }
 
+/* Light follows the system unless Settings says otherwise (data-theme on <html>). */
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme="dark"]) {
     --g0: #eceae6;
     --g1: #f6f5f2;
     --g2: #ffffff;
@@ -46,6 +47,28 @@
     --del-ink: #a2322b;
     color-scheme: light;
   }
+}
+
+:root[data-theme="light"] {
+  --g0: #eceae6;
+  --g1: #f6f5f2;
+  --g2: #ffffff;
+  --g3: #e9e7e3;
+  --g4: #dedbd6;
+  --ink: #1b1c1e;
+  --ink2: #55585e;
+  --ink3: #878a91;
+  --acc: #127a68;
+  --acc-ink: #ffffff;
+  --acc-soft: #d5ece7;
+  --warn: #a8741a;
+  --err: #c23d36;
+  --idle: #9a9da3;
+  --add: #e1f3e8;
+  --add-ink: #1d6b41;
+  --del: #fbe5e3;
+  --del-ink: #a2322b;
+  color-scheme: light;
 }
 
 @theme inline {

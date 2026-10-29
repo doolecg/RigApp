@@ -2,7 +2,9 @@ import { ChevronRight, FileCode, Menu, MessageSquare, Network, PanelLeft, PanelR
 import { useEffect, useRef, useState } from "react";
 import { useConnection } from "@/lib/connection";
 import { seatState } from "@/lib/seat";
+import { bindings, comboOf, type CommandId } from "@/lib/keys";
 import { initSeen, markSeen } from "@/lib/seen";
+import { useLight, useThemeAttribute } from "@/lib/theme";
 import { useMedia, useStored } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 import { ApprovalCard } from "./components/chat/ApprovalCard";
@@ -12,6 +14,7 @@ import { GraphView } from "./components/GraphView";
 import { Overview } from "./components/Overview";
 import { Palette } from "./components/Palette";
 import { SeatPanel } from "./components/SeatPanel";
+import { SettingsView, useUpdate } from "./components/SettingsView";
 import { SetupScreen } from "./components/SetupScreen";
 import { SpecsView } from "./components/SpecsView";
 import { Sidebar } from "./components/Sidebar";
@@ -22,7 +25,7 @@ import { Button } from "./components/ui/button";
 const SIDEBAR_WIDTH = 268;
 const clampWidth = (width: number) => Math.min(420, Math.max(220, width));
 
-export type View = "overview" | "seat";
+export type View = "overview" | "seat" | "settings";
 type Tab = "chat" | "graph" | "terminal" | "specs";
 
 const TABS: { id: Tab; label: string; icon: typeof MessageSquare }[] = [
@@ -65,20 +68,16 @@ export function App() {
     if (viewing) markSeen(viewing.session);
   }, [viewing?.session, viewing?.lastActivityAt]);
 
+  // The handler changes every render (it reads the current state); the listener stays.
+  const onKey = useRef<(event: KeyboardEvent) => void>(() => {});
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        setPalette((open) => !open);
-        return;
-      }
-      if (event.key !== "Escape") return;
-      setDrawer(false);
-      setOverlay(false);
-    };
-    addEventListener("keydown", onKey);
-    return () => removeEventListener("keydown", onKey);
+    const listener = (event: KeyboardEvent) => onKey.current(event);
+    addEventListener("keydown", listener);
+    return () => removeEventListener("keydown", listener);
   }, []);
+  useThemeAttribute(shell?.settings.theme);
+  const light = useLight(shell?.settings.theme);
+  const update = useUpdate();
 
   if (!shell) {
     return (
@@ -103,6 +102,30 @@ export function App() {
   const showPanel = view === "seat" && (roomy ? panelOpen : overlay);
   const toggleSidebar = () => (wide ? setSidebarOpen(!sidebarOpen) : setDrawer(!drawer));
   const togglePanel = () => (roomy ? setPanelOpen(!panelOpen) : setOverlay(!overlay));
+  const keys = bindings(shell.settings);
+  const actions: Record<CommandId, () => void> = {
+    palette: () => setPalette((open) => !open),
+    overview: openOverview,
+    sidebar: toggleSidebar,
+    details: togglePanel,
+    settings: () => setView("settings"),
+    "tab.chat": () => setTab("chat"),
+    "tab.graph": () => setTab("graph"),
+    "tab.terminal": () => setTab("terminal"),
+    "tab.specs": () => setTab("specs"),
+  };
+  onKey.current = (event) => {
+    if (event.key === "Escape") {
+      setDrawer(false);
+      setOverlay(false);
+      return;
+    }
+    const combo = comboOf(event);
+    const command = (Object.keys(keys) as CommandId[]).find((id) => keys[id] === combo);
+    if (!command) return;
+    event.preventDefault();
+    actions[command]();
+  };
   const sidebar = (
     <Sidebar
       shell={shell}
@@ -110,6 +133,10 @@ export function App() {
       selected={current?.seat.session ?? null}
       onSelect={select}
       onOverview={openOverview}
+      onSettings={() => {
+        setView("settings");
+        setDrawer(false);
+      }}
       onSearch={() => setPalette(true)}
       onHide={toggleSidebar}
     />
@@ -130,8 +157,8 @@ export function App() {
               {wide ? <PanelLeft /> : <Menu />}
             </Button>
           )}
-          {view === "overview" ? (
-            <span className="font-semibold">Overview</span>
+          {view !== "seat" ? (
+            <span className="font-semibold">{view === "overview" ? "Overview" : "Settings"}</span>
           ) : (
             current && (
               <>
@@ -177,11 +204,22 @@ export function App() {
             )
           )}
         </header>
-        {view === "overview" ? (
+        {update?.status === "ready" && (
+          <div className="mx-3 mb-2 flex items-center gap-3 rounded-lg bg-acc-soft px-3 py-2">
+            RigApp {update.version} is ready.
+            <Button className="ml-auto h-7" onClick={() => window.rigapp?.installUpdate()}>
+              Restart and install
+            </Button>
+          </div>
+        )}
+        {view === "settings" ? (
+          <SettingsView shell={shell} />
+        ) : view === "overview" ? (
           <Overview shell={shell} onOpen={select} />
         ) : current && tab === "graph" ? (
           <GraphView
             project={current.project}
+            light={light}
             onOpen={(session) => {
               select(session);
               setTab("chat");
@@ -207,14 +245,19 @@ export function App() {
       </main>
       {current && showPanel && (
         <div className={roomy ? "w-[320px] shrink-0" : "absolute inset-y-0 right-0 z-20 w-[min(340px,90vw)] [&>aside]:bg-g2"}>
-          <SeatPanel project={current.project} seat={current.seat} onHide={roomy ? undefined : togglePanel} />
+          <SeatPanel
+            project={current.project}
+            seat={current.seat}
+            tools={shell.settings.tools}
+            onHide={roomy ? undefined : togglePanel}
+          />
         </div>
       )}
       <Palette
         shell={shell}
         open={palette}
         onOpenChange={setPalette}
-        actions={{ openSeat: select, openOverview, toggleSidebar, togglePanel }}
+        actions={{ openSeat: select, openOverview, toggleSidebar, togglePanel, openSettings: () => setView("settings") }}
       />
       {!wide && drawer && (
         <div className="absolute inset-0 z-30 flex">

@@ -1,0 +1,45 @@
+appId: com.doolecg.rigapp
+productName: RigApp
+directories:
+  output: release
+
+# Main, preload and the bundled server are single files (see vite.config.ts), so nothing else is needed.
+files:
+  - dist/**
+  - package.json
+  - "!**/*.map"
+
+# The built web UI sits beside the app; the server reads it from here (RIGAPP_WEB_DIST).
+extraResources:
+  - from: ../web/dist
+    to: web
+
+# Electron's Node starts server.mjs as a separate process, so it must be a real file, not inside the asar.
+asarUnpack:
+  - dist/server.mjs
+
+npmRebuild: false
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  artifactName: RigApp-${version}-windows-${arch}.${ext}
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  license: ../../LICENSE
+
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+  category: Development
+  maintainer: doolecg <doolecg@gmail.com>
+  artifactName: RigApp-${version}-linux-${arch}.${ext}
+
+publish:
+  provider: github
+  owner: doolecg
+  repo: RigApp

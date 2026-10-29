@@ -9,12 +9,15 @@ import { Chats } from "./chat/chats.ts";
 import { listFiles, readText } from "./files.ts";
 import { Hub } from "./hub.ts";
 import { lifecycle } from "./lifecycle.ts";
+import { loadSettings, saveSettings, settings } from "./settings.ts";
 import { Terminals } from "./terminal.ts";
+import { banks, explore, recall } from "./tools.ts";
 
 const PORT = Number(process.env.RIGAPP_PORT ?? 7480);
 // The Vite dev server proxies /ws here during `pnpm dev`.
 const DEV_PORT = 7481;
-const WEB_DIST = fileURLToPath(new URL("../../web/dist/", import.meta.url));
+// The desktop app ships the built UI next to the server and says where.
+const WEB_DIST = process.env.RIGAPP_WEB_DIST ?? fileURLToPath(new URL("../../web/dist/", import.meta.url));
 const INDEX = join(WEB_DIST, "index.html");
 
 const TYPES: Record<string, string> = {
@@ -55,6 +58,7 @@ const wss = new WebSocketServer({
   verifyClient: ({ origin }: { origin?: string }) => !origin || allowed.has(origin),
 });
 
+await loadSettings();
 const hub = new Hub();
 const chats = new Chats(hub);
 const terminals = new Terminals(
@@ -112,6 +116,24 @@ wss.on("connection", (socket) => {
       case "search":
         send({ type: "result", id: request.id, ...(await lifecycle(hub, request)) });
         return;
+      case "settings.set": {
+        const moved = request.patch.daemonUrl !== undefined && request.patch.daemonUrl !== settings().daemonUrl;
+        await saveSettings(request.patch);
+        hub.settingsChanged(moved);
+        break;
+      }
+      case "tools.banks":
+        send({ type: "result", id: request.id, ...(await banks()) });
+        return;
+      case "tools.recall":
+        send({ type: "result", id: request.id, ...(await recall(request.bank, request.query)) });
+        return;
+      case "tools.explore": {
+        const seat = hub.findSeat(request.session);
+        const answer = seat ? await explore(seat, hub.wslDistro, request.query) : { ok: false, error: "RigApp can't find this seat." };
+        send({ type: "result", id: request.id, ...answer });
+        return;
+      }
       case "files.list":
       case "files.read": {
         const seat = hub.findSeat(request.session);

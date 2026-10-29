@@ -4,6 +4,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { SetupCheck, Shell } from "@rigapp/contracts";
 import { health } from "./openrig/client.ts";
+import { settings } from "./settings.ts";
 
 export const platform: Shell["platform"] = process.platform === "win32" ? "windows" : "linux";
 
@@ -40,9 +41,9 @@ async function findDistro(): Promise<{ name: string; state: string } | null> {
   return null;
 }
 
-/** RIGAPP_DAEMON_URL, else the port in ~/.openrig/daemon.json, else 7433. */
+/** RIGAPP_DAEMON_URL, else the address in Settings, else the port in ~/.openrig/daemon.json, else 7433. */
 async function locateDaemon(distro: string | null): Promise<string> {
-  const set = process.env.RIGAPP_DAEMON_URL;
+  const set = process.env.RIGAPP_DAEMON_URL || settings().daemonUrl;
   if (set) return set.replace(/\/$/, "");
   let text = "";
   if (platform === "linux") text = await readFile(join(homedir(), ".openrig", "daemon.json"), "utf8").catch(() => "");

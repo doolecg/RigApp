@@ -1,5 +1,5 @@
 import { Command } from "cmdk";
-import { Check, FileSearch, LayoutGrid, PanelLeft, PanelRight, RefreshCw, Square, X } from "lucide-react";
+import { Check, FileSearch, LayoutGrid, PanelLeft, PanelRight, RefreshCw, Settings, Square, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import type { SearchHit, Shell } from "@rigapp/contracts";
 import { request } from "@/lib/connection";
@@ -11,6 +11,7 @@ export interface PaletteActions {
   openOverview: () => void;
   toggleSidebar: () => void;
   togglePanel: () => void;
+  openSettings: () => void;
 }
 
 function Item({ value, onSelect, children }: { value: string; onSelect: () => void; children: ReactNode }) {
@@ -132,6 +133,10 @@ export function Palette({
           <Item value="toggle details panel" onSelect={() => run(actions.togglePanel)}>
             <PanelRight />
             Show or hide seat details
+          </Item>
+          <Item value="settings theme shortcuts keys updates about" onSelect={() => run(actions.openSettings)}>
+            <Settings />
+            Open Settings
           </Item>
           <Item value="check openrig again reconnect" onSelect={() => run(() => void request({ method: "setup.recheck" }))}>
             <RefreshCw />

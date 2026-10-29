@@ -13,13 +13,14 @@ export default defineConfig({
   webServer: [
     {
       command: "node ../apps/server/src/bin.ts",
-      env: { RIGAPP_PORT: "7490" },
+      // Test settings live in test-results, never in your own ~/.rigapp.
+      env: { RIGAPP_PORT: "7490", RIGAPP_DATA_DIR: "../test-results/data" },
       url: "http://127.0.0.1:7490",
       reuseExistingServer: false,
     },
     {
       command: "node ../apps/server/src/bin.ts",
-      env: { RIGAPP_PORT: "7491", RIGAPP_DAEMON_URL: "http://127.0.0.1:7499" },
+      env: { RIGAPP_PORT: "7491", RIGAPP_DAEMON_URL: "http://127.0.0.1:7499", RIGAPP_DATA_DIR: "../test-results/data-setup" },
       url: "http://127.0.0.1:7491",
       reuseExistingServer: false,
     },

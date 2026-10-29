@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.base.json",
+  // Everything here is bundled by Vite, so the bundler resolver fits better than NodeNext.
+  "compilerOptions": { "module": "ESNext", "moduleResolution": "Bundler", "types": ["node"] },
+  "include": ["src", "vite.config.mts"]
+}

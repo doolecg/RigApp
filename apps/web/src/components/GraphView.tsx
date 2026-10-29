@@ -2,7 +2,6 @@ import { Controls, Handle, Position, ReactFlow, type Edge, type Node, type NodeP
 import "@xyflow/react/dist/style.css";
 import type { Project, Seat } from "@rigapp/contracts";
 import { seatState, title } from "@/lib/seat";
-import { useMedia } from "@/lib/ui";
 import { StatusDot } from "./StatusDot";
 
 const SEAT_W = 190;
@@ -139,9 +138,8 @@ function layout(project: Project): { nodes: Node[]; edges: Edge[] } {
 }
 
 /** The rig's pods, seats and links, with live status; click a seat to open its thread. */
-export function GraphView({ project, onOpen }: { project: Project; onOpen: (session: string) => void }) {
+export function GraphView({ project, light, onOpen }: { project: Project; light: boolean; onOpen: (session: string) => void }) {
   const { nodes, edges } = layout(project);
-  const light = useMedia("(prefers-color-scheme: light)");
   return (
     <div className="relative min-h-0 flex-1">
       <ReactFlow

@@ -4,6 +4,7 @@ import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 import type { ClientMessage, ServerMessage } from "@rigapp/contracts";
+import { pressKey, sendText } from "./actions.ts";
 import { Chats } from "./chat/chats.ts";
 import { Hub } from "./hub.ts";
 
@@ -77,6 +78,21 @@ wss.on("connection", (socket) => {
         threads.delete(request.session);
         chats.unsubscribe(request.session, send);
         break;
+      case "seat.send":
+      case "seat.key": {
+        const found = hub.find(request.session);
+        if (!found) {
+          send({ type: "result", id: request.id, ok: false, error: "RigApp can't find this seat in OpenRig." });
+          return;
+        }
+        const result =
+          request.method === "seat.send"
+            ? await sendText(hub.url, found.seat, found.project.human, request.text, !!request.force)
+            : await pressKey(hub.wslDistro, found.seat, request.key);
+        hub.nudge();
+        send({ type: "result", id: request.id, ...result });
+        return;
+      }
       default:
         send({ type: "result", id: (request as ClientMessage).id, ok: false, error: "unknown method" });
         return;

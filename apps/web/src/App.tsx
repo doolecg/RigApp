@@ -3,7 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { useConnection } from "@/lib/connection";
 import { seatState } from "@/lib/seat";
 import { useMedia, useStored } from "@/lib/ui";
+import { ApprovalCard } from "./components/chat/ApprovalCard";
 import { Chat } from "./components/chat/Chat";
+import { Composer } from "./components/chat/Composer";
 import { SeatPanel } from "./components/SeatPanel";
 import { SetupScreen } from "./components/SetupScreen";
 import { Sidebar } from "./components/Sidebar";
@@ -108,7 +110,15 @@ export function App() {
           )}
         </header>
         {current ? (
-          <Chat key={current.seat.session} seat={current.seat} />
+          <>
+            <Chat key={current.seat.session} seat={current.seat} />
+            {current.seat.activity === "needs_input" && (
+              <div className="mx-auto w-full max-w-[760px] px-3 pb-2 sm:px-6">
+                <ApprovalCard seat={current.seat} />
+              </div>
+            )}
+            <Composer key={`composer-${current.seat.session}`} project={current.project} seat={current.seat} />
+          </>
         ) : (
           <p className="m-auto text-ink2">OpenRig has no rigs yet.</p>
         )}

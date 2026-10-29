@@ -85,11 +85,14 @@ export function useConnection(): State {
   );
 }
 
-export function request(method: "setup.recheck"): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const id = send({ method });
-    pending.set(id, (result) => (result.ok ? resolve() : reject(new Error(result.error))));
-  });
+export type Result = Extract<ServerMessage, { type: "result" }>;
+
+/** Asks the server to do something; resolves with its answer, never rejects. */
+export function request(message: Outgoing): Promise<Result> {
+  if (socket.readyState !== WebSocket.OPEN) {
+    return Promise.resolve({ type: "result", id: 0, ok: false, error: "Not connected to the RigApp server." });
+  }
+  return new Promise((resolve) => pending.set(send(message), resolve));
 }
 
 /** Starts following a seat's chat; call the returned function to stop. */

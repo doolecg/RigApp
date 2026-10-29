@@ -33,6 +33,7 @@ export interface NodeEntry {
   cwd: string | null;
   tmuxAttachCommand: string | null;
   agentActivity: { state: string } | null;
+  lastActivityAt: string | null;
   contextUsage: { usedPercentage: number | null; transcriptPath: string | null } | null;
 }
 

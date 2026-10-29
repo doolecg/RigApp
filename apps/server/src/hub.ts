@@ -1,4 +1,4 @@
-import type { Seat, ServerMessage, Shell } from "@rigapp/contracts";
+import type { Project, Seat, ServerMessage, Shell } from "@rigapp/contracts";
 import { health, loadProjects } from "./openrig/client.ts";
 import { followSse } from "./openrig/sse.ts";
 import { platform, runChecks } from "./setup.ts";
@@ -30,10 +30,27 @@ export class Hub {
     return { type: "shell", seq: this.seq, shell: this.shell };
   }
 
+  get url(): string {
+    return this.shell.daemon.url;
+  }
+
+  get wslDistro(): string | null {
+    return this.distro;
+  }
+
   findSeat(session: string): Seat | undefined {
+    return this.find(session)?.seat;
+  }
+
+  find(session: string): { project: Project; seat: Seat } | undefined {
     for (const project of this.shell.projects)
-      for (const pod of project.pods) for (const seat of pod.seats) if (seat.session === session) return seat;
+      for (const pod of project.pods) for (const seat of pod.seats) if (seat.session === session) return { project, seat };
     return undefined;
+  }
+
+  /** Re-read the daemon soon, e.g. right after RigApp changed something. */
+  nudge(): void {
+    this.scheduleRefresh();
   }
 
   /** A daemon-side (Linux) path as this machine can open it: through \\wsl.localhost on Windows. */

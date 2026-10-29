@@ -28,6 +28,10 @@ export interface Seat {
   attachCommand: string | null;
   /** The harness session file as the daemon reports it (a Linux path), if known. */
   transcriptPath: string | null;
+  /** When the seat last did something, from the daemon (ISO time). */
+  lastActivityAt: string | null;
+  /** The bottom of the seat's pane while it waits on you (`needs_input`), else null. */
+  prompt: string | null;
 }
 
 /** One row of a thread's chat, read from the seat's harness session file. */
@@ -59,6 +63,8 @@ export interface Project {
   latestSnapshot: string | null;
   /** Session name of the seat you talk to. */
   lead: string | null;
+  /** The rig's terminal seat: messages from RigApp are signed as this seat, the human. */
+  human: string | null;
   pods: Pod[];
 }
 
@@ -97,9 +103,13 @@ export type ServerMessage =
       /** Why there is no chat for this seat, when there is none. */
       unavailable?: string;
     }
-  | { type: "result"; id: number; ok: boolean; error?: string };
+  /** `reason` is the daemon's refusal code when it refused a send. */
+  | { type: "result"; id: number; ok: boolean; error?: string; reason?: string };
 
 /** UI to server. */
 export type ClientMessage =
   | { id: number; method: "setup.recheck" }
-  | { id: number; method: "thread.subscribe" | "thread.unsubscribe"; session: string };
+  | { id: number; method: "thread.subscribe" | "thread.unsubscribe"; session: string }
+  /** `force` sends even when the seat is busy (the daemon's `mid_work` refusal). */
+  | { id: number; method: "seat.send"; session: string; text: string; force?: boolean }
+  | { id: number; method: "seat.key"; session: string; key: "approve" | "deny" | "stop" };

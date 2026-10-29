@@ -38,6 +38,8 @@ function toSeat(node: NodeEntry): Seat {
     contextPercent: node.contextUsage?.usedPercentage ?? null,
     attachCommand: node.tmuxAttachCommand,
     transcriptPath: node.contextUsage?.transcriptPath ?? null,
+    lastActivityAt: node.lastActivityAt ?? null,
+    prompt: null,
   };
 }
 
@@ -69,6 +71,7 @@ export function buildProject(ps: PsEntry, rig: RigDetail, nodes: NodeEntry[]): P
     uptime: ps.uptime,
     latestSnapshot: ps.latestSnapshot,
     lead: pickLead(rig, nodes),
+    human: nodes.find((n) => n.runtime === "terminal")?.canonicalSessionName ?? null,
     pods,
   };
 }

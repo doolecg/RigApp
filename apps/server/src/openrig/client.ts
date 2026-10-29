@@ -19,9 +19,25 @@ export async function health(url: string): Promise<Health | null> {
   }
 }
 
+/** The last lines of a seat's pane, through `POST /api/transport/capture`. */
+async function capture(url: string, session: string, lines: number): Promise<string | null> {
+  try {
+    const res = await fetch(`${url}/api/transport/capture`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ session, lines }),
+      signal: AbortSignal.timeout(5000),
+    });
+    const body = (await res.json()) as { ok?: boolean; content?: string };
+    return body.ok ? (body.content ?? "").trimEnd() : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function loadProjects(url: string): Promise<Project[]> {
   const ps = await daemonGet<PsEntry[]>(url, "/api/ps");
-  return Promise.all(
+  const projects = await Promise.all(
     ps
       .filter((p) => !p.isArchived)
       .map(async (p) => {
@@ -32,4 +48,9 @@ export async function loadProjects(url: string): Promise<Project[]> {
         return buildProject(p, rig, nodes);
       }),
   );
+  // OpenRig gives no prompt text for a waiting seat (systems.md gap 2), so show
+  // the bottom of its pane, where the harness draws the question.
+  const waiting = projects.flatMap((p) => p.pods.flatMap((pod) => pod.seats)).filter((s) => s.activity === "needs_input");
+  await Promise.all(waiting.map(async (seat) => (seat.prompt = await capture(url, seat.session, 30))));
+  return projects;
 }

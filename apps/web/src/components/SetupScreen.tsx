@@ -59,7 +59,7 @@ export function SetupScreen({ shell }: { shell: Shell }) {
   const recheck = async () => {
     setChecking(true);
     try {
-      await request("setup.recheck");
+      await request({ method: "setup.recheck" });
     } finally {
       setChecking(false);
     }

@@ -220,7 +220,8 @@ export type ClientMessage =
   | { id: number; method: "thread.subscribe" | "thread.unsubscribe"; session: string }
   /** `force` sends even when the seat is busy (the daemon's `mid_work` refusal). */
   | { id: number; method: "seat.send"; session: string; text: string; force?: boolean }
-  | { id: number; method: "seat.key"; session: string; key: "approve" | "deny" | "stop" }
+  /** A digit presses that numbered choice in the seat's prompt, e.g. "don't ask again". */
+  | { id: number; method: "seat.key"; session: string; key: "approve" | "deny" | "stop" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" }
   /** Read-only look at the seat's folder; `path` is relative to it ("" is the folder itself). */
   | { id: number; method: "files.list" | "files.read"; session: string; path: string }
   | { id: number; method: "term.subscribe" | "term.unsubscribe"; session: string }

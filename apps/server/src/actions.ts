@@ -1,13 +1,14 @@
 import { execFile } from "node:child_process";
 import type { Seat } from "@rigapp/contracts";
 
-export type SeatKey = "approve" | "deny" | "stop";
+/** An action, or the number of a choice in the seat's prompt ("1" to "9"). */
+export type SeatKey = "approve" | "deny" | "stop" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 
 /**
  * Claude Code's keys for each action: Enter picks the highlighted first choice
  * ("Yes") on a permission prompt, Escape declines it or stops a working turn.
  */
-const KEYS: Record<SeatKey, string> = { approve: "Enter", deny: "Escape", stop: "Escape" };
+const KEYS: Record<string, string> = { approve: "Enter", deny: "Escape", stop: "Escape" };
 
 /** Plain words for the daemon's 409 refusal reasons (transport.ts, session-transport.ts). */
 const REFUSALS: Record<string, string> = {
@@ -51,7 +52,9 @@ export async function sendText(url: string, seat: Seat, sender: string | null, t
  * Windows, locally on Linux.
  */
 export function pressKey(distro: string | null, seat: Seat, key: SeatKey): Promise<SendResult> {
-  const args = ["tmux", "send-keys", "-t", seat.session, KEYS[key]];
+  if (!(key in KEYS) && !/^[1-9]$/.test(key)) return Promise.resolve({ ok: false, error: `RigApp does not press "${key}".` });
+  // A digit picks that numbered choice in Claude Code's prompt.
+  const args =["tmux", "send-keys", "-t", seat.session, KEYS[key] ?? key];
   const [cmd, argv] = distro ? ["wsl.exe", ["-d", distro, "-e", ...args]] : ["tmux", args.slice(1)];
   return new Promise((resolve) => {
     execFile(cmd, argv as string[], { windowsHide: true, timeout: 10000 }, (err, _out, stderr) => {

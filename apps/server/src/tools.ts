@@ -53,13 +53,14 @@ export async function recall(bank: string, query: string): Promise<ToolAnswer> {
  * so no tool list sits in their context on every turn.
  */
 export async function seatTools(distro: string | null): Promise<ToolAnswer> {
+  const last = (out: string) => out.split("\n").pop()?.trim() ?? "";
+  // CodeGraph is a plain CLI seats can call; check it from a Windows drive, where it works.
+  const codegraph = await inLinux(distro, ["bash", "-lc", "cd /mnt/c 2>/dev/null; codegraph --version"]);
+  const cg = codegraph.ok ? last(codegraph.out) : null;
   const version = await inLinux(distro, ["bash", "-lc", "mcptoon --version"]);
-  if (!version.ok) return { ok: true, data: { mcptoon: null, hindsight: false } };
+  if (!version.ok) return { ok: true, data: { mcptoon: null, hindsight: false, codegraph: cg } };
   const list = await inLinux(distro, ["bash", "-lc", "mcptoon list"]);
-  return {
-    ok: true,
-    data: { mcptoon: version.out.split("\n").pop()?.trim() ?? "", hindsight: /^\s*hindsight\s/m.test(list.out) },
-  };
+  return { ok: true, data: { mcptoon: last(version.out), hindsight: /^\s*hindsight\s/m.test(list.out), codegraph: cg } };
 }
 
 /** A seat folder on this machine: /mnt/e/x is E:\x on Windows; other WSL paths go through \\wsl.localhost. */

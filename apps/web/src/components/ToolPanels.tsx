@@ -3,7 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import type { Project, Seat } from "@rigapp/contracts";
 import { request } from "@/lib/connection";
 import { useStored } from "@/lib/ui";
-import { SeatMemory } from "./SeatMemory";
+import { SeatCode, SeatMemory } from "./SeatMemory";
 
 function SearchBox({ placeholder, busy, onSearch }: { placeholder: string; busy: boolean; onSearch: (q: string) => void }) {
   const [query, setQuery] = useState("");
@@ -91,7 +91,7 @@ export function MemoryPanel({ project }: { project: Project }) {
 }
 
 /** CodeGraph's view of the code in the seat's folder: a symbol or question, its source and callers. */
-export function CodePanel({ seat }: { seat: Seat }) {
+export function CodePanel({ project, seat }: { project: Project; seat: Seat }) {
   const [answer, setAnswer] = useState<{ folder: string; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -118,6 +118,7 @@ export function CodePanel({ seat }: { seat: Seat }) {
           </pre>
         </>
       )}
+      <SeatCode project={project} />
     </div>
   );
 }

@@ -17,6 +17,10 @@
   --warn: #d6a54a;
   --err: #e0625b;
   --idle: #5c6068;
+  --add: #173226;
+  --add-ink: #7fd3a6;
+  --del: #3a1c1e;
+  --del-ink: #f09a94;
   color-scheme: dark;
 }
 
@@ -36,6 +40,10 @@
     --warn: #a8741a;
     --err: #c23d36;
     --idle: #9a9da3;
+    --add: #e1f3e8;
+    --add-ink: #1d6b41;
+    --del: #fbe5e3;
+    --del-ink: #a2322b;
     color-scheme: light;
   }
 }
@@ -70,4 +78,68 @@ body {
   background: var(--g1);
   color: var(--ink);
   font: 13px/1.45 var(--font-sans);
+}
+
+/* Markdown in chat messages. */
+.md > :first-child {
+  margin-top: 0;
+}
+.md > :last-child {
+  margin-bottom: 0;
+}
+.md p,
+.md ul,
+.md ol,
+.md pre,
+.md table {
+  margin: 0 0 0.7em;
+}
+.md ul,
+.md ol {
+  padding-left: 1.4em;
+}
+.md ul {
+  list-style: disc;
+}
+.md ol {
+  list-style: decimal;
+}
+.md h1,
+.md h2,
+.md h3,
+.md h4 {
+  margin: 1em 0 0.4em;
+  font-size: 1em;
+  font-weight: 600;
+}
+.md a {
+  color: var(--acc);
+}
+.md code {
+  font-family: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
+  font-size: 12px;
+  background: var(--g3);
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+.md pre {
+  background: var(--g0);
+  border-radius: 8px;
+  padding: 10px 12px;
+  overflow-x: auto;
+}
+.md pre code {
+  background: none;
+  padding: 0;
+}
+.md table {
+  border-collapse: collapse;
+}
+.md th,
+.md td {
+  padding: 4px 10px;
+  text-align: left;
+}
+.md tr:nth-child(even) td {
+  background: var(--g2);
 }

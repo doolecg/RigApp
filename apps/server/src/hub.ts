@@ -1,4 +1,4 @@
-import type { ServerMessage, Shell } from "@rigapp/contracts";
+import type { Seat, ServerMessage, Shell } from "@rigapp/contracts";
 import { health, loadProjects } from "./openrig/client.ts";
 import { followSse } from "./openrig/sse.ts";
 import { platform, runChecks } from "./setup.ts";
@@ -16,6 +16,7 @@ export class Hub {
     platform,
     projects: [],
   };
+  private distro: string | null = null;
   private json = "";
   private seq = 0;
   private follow: AbortController | null = null;
@@ -29,12 +30,24 @@ export class Hub {
     return { type: "shell", seq: this.seq, shell: this.shell };
   }
 
+  findSeat(session: string): Seat | undefined {
+    for (const project of this.shell.projects)
+      for (const pod of project.pods) for (const seat of pod.seats) if (seat.session === session) return seat;
+    return undefined;
+  }
+
+  /** A daemon-side (Linux) path as this machine can open it: through \\wsl.localhost on Windows. */
+  localPath(linuxPath: string): string {
+    return this.distro ? `\\\\wsl.localhost\\${this.distro}${linuxPath.replaceAll("/", "\\")}` : linuxPath;
+  }
+
   /** Full check: find the daemon, and if it is down, check WSL, tmux and the CLI. */
   async check(): Promise<void> {
     clearTimeout(this.retry);
     const result = await runChecks();
     this.shell.daemon = { url: result.url, ok: !!result.version, version: result.version, host: result.host };
     this.shell.checks = result.checks;
+    this.distro = result.distro;
     if (result.version) {
       this.startFollowing();
       await this.refresh();

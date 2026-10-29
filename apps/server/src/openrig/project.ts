@@ -37,6 +37,7 @@ function toSeat(node: NodeEntry): Seat {
     cwd: node.cwd,
     contextPercent: node.contextUsage?.usedPercentage ?? null,
     attachCommand: node.tmuxAttachCommand,
+    transcriptPath: node.contextUsage?.transcriptPath ?? null,
   };
 }
 

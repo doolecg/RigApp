@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useConnection } from "@/lib/connection";
 import { seatState } from "@/lib/seat";
 import { useMedia, useStored } from "@/lib/ui";
+import { Chat } from "./components/chat/Chat";
 import { SeatPanel } from "./components/SeatPanel";
 import { SetupScreen } from "./components/SetupScreen";
 import { Sidebar } from "./components/Sidebar";
@@ -106,7 +107,11 @@ export function App() {
             </>
           )}
         </header>
-        {!current && <p className="m-auto text-ink2">OpenRig has no rigs yet.</p>}
+        {current ? (
+          <Chat key={current.seat.session} seat={current.seat} />
+        ) : (
+          <p className="m-auto text-ink2">OpenRig has no rigs yet.</p>
+        )}
       </main>
       {current && showPanel && (
         <div className={roomy ? "w-[320px] shrink-0" : "absolute inset-y-0 right-0 z-20 w-[min(340px,90vw)] [&>aside]:bg-g2"}>

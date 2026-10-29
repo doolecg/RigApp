@@ -26,7 +26,24 @@ export interface Seat {
   cwd: string | null;
   contextPercent: number | null;
   attachCommand: string | null;
+  /** The harness session file as the daemon reports it (a Linux path), if known. */
+  transcriptPath: string | null;
 }
+
+/** One row of a thread's chat, read from the seat's harness session file. */
+export type ChatItem =
+  | { kind: "user"; id: string; at: string | null; text: string }
+  | { kind: "assistant"; id: string; at: string | null; text: string }
+  | {
+      kind: "tool";
+      id: string;
+      at: string | null;
+      name: string;
+      input: Record<string, unknown>;
+      /** Null until the result line arrives. Long results are cut short. */
+      result: string | null;
+      error: boolean;
+    };
 
 export interface Pod {
   name: string;
@@ -71,7 +88,18 @@ export interface Shell {
 /** Server to UI. The shell is sent whole on connect and on every change. */
 export type ServerMessage =
   | { type: "shell"; seq: number; shell: Shell }
+  | {
+      type: "thread";
+      session: string;
+      /** True: `items` is the whole chat. False: add these, or replace ones with the same id. */
+      reset: boolean;
+      items: ChatItem[];
+      /** Why there is no chat for this seat, when there is none. */
+      unavailable?: string;
+    }
   | { type: "result"; id: number; ok: boolean; error?: string };
 
 /** UI to server. */
-export type ClientMessage = { id: number; method: "setup.recheck" };
+export type ClientMessage =
+  | { id: number; method: "setup.recheck" }
+  | { id: number; method: "thread.subscribe" | "thread.unsubscribe"; session: string };

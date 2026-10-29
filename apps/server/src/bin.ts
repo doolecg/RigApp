@@ -4,6 +4,7 @@ import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 import type { ClientMessage, ServerMessage } from "@rigapp/contracts";
+import { Chats } from "./chat/chats.ts";
 import { Hub } from "./hub.ts";
 
 const PORT = Number(process.env.RIGAPP_PORT ?? 7480);
@@ -51,20 +52,36 @@ const wss = new WebSocketServer({
 });
 
 const hub = new Hub();
+const chats = new Chats(hub);
 
 wss.on("connection", (socket) => {
   const send = (message: ServerMessage) => socket.send(JSON.stringify(message));
+  const threads = new Set<string>();
   send(hub.message());
   hub.listeners.add(send);
-  socket.on("close", () => hub.listeners.delete(send));
+  socket.on("close", () => {
+    hub.listeners.delete(send);
+    for (const session of threads) chats.unsubscribe(session, send);
+  });
   socket.on("message", async (data) => {
     const request = JSON.parse(String(data)) as ClientMessage;
-    if (request.method === "setup.recheck") {
-      await hub.check();
-      send({ type: "result", id: request.id, ok: true });
-    } else {
-      send({ type: "result", id: request.id, ok: false, error: `unknown method ${String(request.method)}` });
+    switch (request.method) {
+      case "setup.recheck":
+        await hub.check();
+        break;
+      case "thread.subscribe":
+        threads.add(request.session);
+        await chats.subscribe(request.session, send);
+        break;
+      case "thread.unsubscribe":
+        threads.delete(request.session);
+        chats.unsubscribe(request.session, send);
+        break;
+      default:
+        send({ type: "result", id: (request as ClientMessage).id, ok: false, error: "unknown method" });
+        return;
     }
+    send({ type: "result", id: request.id, ok: true });
   });
 });
 

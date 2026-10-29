@@ -60,6 +60,7 @@ export interface CheckResult {
   url: string;
   /** "WSL Ubuntu" or "local". */
   host: string;
+  distro: string | null;
   version: string | null;
   /** Empty when the daemon answers. */
   checks: SetupCheck[];
@@ -81,7 +82,7 @@ export async function runChecks(): Promise<CheckResult> {
   const host = distro ? `WSL ${distro}` : "local";
   const url = await locateDaemon(distro);
   const h = await health(url);
-  if (h) return { url, host, version: h.semver, checks: [] };
+  if (h) return { url, host, distro, version: h.semver, checks: [] };
 
   const where = distro ? ` in ${distro}` : "";
   const canRun = platform === "linux" || !!distro;
@@ -102,5 +103,5 @@ export async function runChecks(): Promise<CheckResult> {
     },
     { id: "daemon", label: "Daemon", ok: false, detail: `Nothing answering on ${url.replace("http://", "")}` },
   );
-  return { url, host, version: null, checks };
+  return { url, host, distro, version: null, checks };
 }

@@ -72,8 +72,8 @@
     <li><strong>Monorepo:</strong> pnpm workspace with <code>apps/server</code>, <code>apps/web</code>, <code>apps/desktop</code> and a small <code>packages/contracts</code> for the message types. T3 Code layout.</li>
     <li class="ticked"><strong>Daemon link:</strong> the server finds OpenRig (WSL on Windows, local on Linux, or a set address), checks <code>/healthz</code>, follows <code>/api/events</code> and <code>/api/activity/events</code>, and re-reads <code>/api/ps</code> and seat lists on each change.</li>
     <li class="ticked"><strong>Setup screen:</strong> clear checks for WSL, tmux, the <code>rig</code> CLI and the daemon, with exact steps. Installs nothing.</li>
-    <li><strong>Layout:</strong> resizable sidebar (projects, pods, seats, search, New project), chat column, collapsible right panel (seat details, files).</li>
-    <li><strong>Chat:</strong> messages read from each seat's session file (Claude Code first, then Codex and Pi), collapsible tool cards, diffs, status dot per thread, unread markers.</li>
+    <li class="ticked"><strong>Layout:</strong> resizable sidebar (projects, pods, seats), chat column, collapsible right panel (seat details). The search box opens Ctrl+K, so it comes with the command palette; Files comes with Chat; New project moved to M3 (2026-10-29).</li>
+    <li><strong>Chat:</strong> a Files tab in the right panel, and messages read from each seat's session file (Claude Code first, then Codex and Pi), collapsible tool cards, diffs, status dot per thread, unread markers.</li>
     <li><strong>Approvals and interrupt:</strong> a card when a seat is waiting on a permission prompt, Approve and Deny, and Stop. Answers are sent as keys (stopgap, see systems.md gaps 2 and 3).</li>
     <li><strong>Composer:</strong> multiline, Enter to send, Shift+Enter for a new line, <code>@seat</code> to direct a message, <code>/</code> rig commands. Sends through <code>/api/transport/send</code>.</li>
     <li><strong>Overview:</strong> every seat that waits, errored, finished or is working, with one-click actions.</li>
@@ -113,6 +113,14 @@
     <li>Press the panel button next to RigApp: the sidebar hides; the same button at the top left brings it back.</li>
     <li>Press the panel button at the top right: the seat details hide and come back. Reload: both choices stay.</li>
     <li>Make the window narrow (or press F12, then Ctrl+Shift+M for phone size 390): a menu button opens the sidebar over the page; picking a seat closes it. The top right button opens the details over the page; X or Esc closes it.</li>
+  </ol>
+  <h3>Step: Chat (reading)</h3>
+  <ol>
+    <li>Run <code>&amp; "E:\REPOS\AI TOOLS\RigApp\tools\dev.ps1"</code> and open <code>http://localhost:7481</code>.</li>
+    <li>Click <strong>build</strong> under starter: its whole conversation shows, with each tool call as a folded card. Edits show their change open, in red and green, with +/− counts.</li>
+    <li>Click any folded card: it opens to show the command and what came back.</li>
+    <li>Click <strong>lead</strong> under kernel. In Ubuntu, send it a message with <code>rig send advisor-lead@kernel "Say hello in one line"</code>: within a couple of seconds your message and its reply appear without reloading.</li>
+    <li>Click <strong>human</strong> under kernel: it says it is a terminal seat with no chat.</li>
   </ol>
 </div>
 

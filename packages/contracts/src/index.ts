@@ -49,6 +49,13 @@ export type ChatItem =
       error: boolean;
     };
 
+/** One row of a folder listing in the Files tab. */
+export interface FileEntry {
+  name: string;
+  dir: boolean;
+  size: number;
+}
+
 export interface Pod {
   name: string;
   seats: Seat[];
@@ -104,7 +111,7 @@ export type ServerMessage =
       unavailable?: string;
     }
   /** `reason` is the daemon's refusal code when it refused a send. */
-  | { type: "result"; id: number; ok: boolean; error?: string; reason?: string };
+  | { type: "result"; id: number; ok: boolean; error?: string; reason?: string; files?: FileEntry[]; text?: string };
 
 /** UI to server. */
 export type ClientMessage =
@@ -112,4 +119,6 @@ export type ClientMessage =
   | { id: number; method: "thread.subscribe" | "thread.unsubscribe"; session: string }
   /** `force` sends even when the seat is busy (the daemon's `mid_work` refusal). */
   | { id: number; method: "seat.send"; session: string; text: string; force?: boolean }
-  | { id: number; method: "seat.key"; session: string; key: "approve" | "deny" | "stop" };
+  | { id: number; method: "seat.key"; session: string; key: "approve" | "deny" | "stop" }
+  /** Read-only look at the seat's folder; `path` is relative to it ("" is the folder itself). */
+  | { id: number; method: "files.list" | "files.read"; session: string; path: string };

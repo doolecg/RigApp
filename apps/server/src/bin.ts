@@ -6,6 +6,7 @@ import { WebSocketServer } from "ws";
 import type { ClientMessage, ServerMessage } from "@rigapp/contracts";
 import { pressKey, sendText } from "./actions.ts";
 import { Chats } from "./chat/chats.ts";
+import { listFiles, readText } from "./files.ts";
 import { Hub } from "./hub.ts";
 
 const PORT = Number(process.env.RIGAPP_PORT ?? 7480);
@@ -78,6 +79,25 @@ wss.on("connection", (socket) => {
         threads.delete(request.session);
         chats.unsubscribe(request.session, send);
         break;
+      case "files.list":
+      case "files.read": {
+        const seat = hub.findSeat(request.session);
+        if (!seat?.cwd) {
+          send({ type: "result", id: request.id, ok: false, error: "OpenRig reports no folder for this seat." });
+          return;
+        }
+        const root = hub.localPath(seat.cwd);
+        try {
+          send(
+            request.method === "files.list"
+              ? { type: "result", id: request.id, ok: true, files: await listFiles(root, request.path) }
+              : { type: "result", id: request.id, ok: true, text: await readText(root, request.path) },
+          );
+        } catch (error) {
+          send({ type: "result", id: request.id, ok: false, error: (error as Error).message });
+        }
+        return;
+      }
       case "seat.send":
       case "seat.key": {
         const found = hub.find(request.session);

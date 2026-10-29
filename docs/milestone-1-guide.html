@@ -54,14 +54,14 @@
 
 <main>
 <h1>Milestone 1 "Projects and threads"</h1>
-<p class="status">State: Planned (proposed 2026-10-29, not approved)</p>
+<p class="status">State: In progress: approved 2026-10-29</p>
 
 <div class="box first">
   <strong>Read this first</strong>
   <ul>
     <li>Goal: Open RigApp, see every rig as a project with its seats as threads, talk to the lead and to any seat, answer approvals and see what needs you, all against a real rig in WSL.</li>
     <li>Out of scope: Graph and terminal (M2), spec editing and lifecycle (M3), updater and packaging (M4), seat tools (M5).</li>
-    <li>Nothing here starts until you approve this guide.</li>
+    <li>Approved 2026-10-29 ("Start building"), with Claude's recommended answer to each question in section 2. The terminal socket stays off until you turn it on yourself; RigApp works without it.</li>
     <li>To change anything, write in the notes box under it, press Copy my notes, and paste to Claude.</li>
   </ul>
 </div>
@@ -70,8 +70,8 @@
 <div class="box">
   <ul class="check">
     <li><strong>Monorepo:</strong> pnpm workspace with <code>apps/server</code>, <code>apps/web</code>, <code>apps/desktop</code> and a small <code>packages/contracts</code> for the message types. T3 Code layout.</li>
-    <li><strong>Daemon link:</strong> the server finds OpenRig (WSL on Windows, local on Linux, or a set address), checks <code>/healthz</code>, follows <code>/api/events</code> and <code>/api/activity/events</code>, and re-reads <code>/api/ps</code> and seat lists on each change.</li>
-    <li><strong>Setup screen:</strong> clear checks for WSL, tmux, the <code>rig</code> CLI and the daemon, with exact steps. Installs nothing.</li>
+    <li class="ticked"><strong>Daemon link:</strong> the server finds OpenRig (WSL on Windows, local on Linux, or a set address), checks <code>/healthz</code>, follows <code>/api/events</code> and <code>/api/activity/events</code>, and re-reads <code>/api/ps</code> and seat lists on each change.</li>
+    <li class="ticked"><strong>Setup screen:</strong> clear checks for WSL, tmux, the <code>rig</code> CLI and the daemon, with exact steps. Installs nothing.</li>
     <li><strong>Layout:</strong> resizable sidebar (projects, pods, seats, search, New project), chat column, collapsible right panel (seat details, files).</li>
     <li><strong>Chat:</strong> messages read from each seat's session file (Claude Code first, then Codex and Pi), collapsible tool cards, diffs, status dot per thread, unread markers.</li>
     <li><strong>Approvals and interrupt:</strong> a card when a seat is waiting on a permission prompt, Approve and Deny, and Stop. Answers are sent as keys (stopgap, see systems.md gaps 2 and 3).</li>
@@ -100,9 +100,11 @@
 <div class="box">
   <h3 style="margin-top:0">Step: Setup screen</h3>
   <ol>
-    <li>Run the Dev Run config in IntelliJ, or <code>pnpm dev</code> in <code>E:\REPOS\AI TOOLS\RigApp</code>.</li>
-    <li>Stop the daemon in Ubuntu with <code>rig daemon stop</code>: RigApp shows the setup screen with the daemon check failed.</li>
-    <li>Run <code>rig daemon start</code> and press Check again: the sidebar fills with kernel and starter.</li>
+    <li>Run the Dev Run config in IntelliJ. It installs, builds and opens <code>http://127.0.0.1:7480</code> in your browser.</li>
+    <li>The sidebar shows kernel (Advisor, Operator, Queue) and starter (Dev), with lead marked and a harness label on each seat. Click a seat: its details show on the right (widen the window if the right panel is hidden).</li>
+    <li>In Ubuntu run <code>rig daemon stop</code> (your seats keep running): within a few seconds RigApp shows the setup screen, with WSL2, tmux and the CLI ticked and the daemon crossed.</li>
+    <li>Run <code>rig daemon start</code> and press Check again: the sidebar comes back with kernel and starter.</li>
+    <li>Stop RigApp with the red Stop button in IntelliJ.</li>
   </ol>
 </div>
 

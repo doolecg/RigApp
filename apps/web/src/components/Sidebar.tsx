@@ -1,0 +1,84 @@
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import type { Project, Shell } from "@rigapp/contracts";
+import { seatState, title } from "@/lib/seat";
+import { cn } from "@/lib/utils";
+import { StatusDot } from "./StatusDot";
+
+interface Props {
+  shell: Shell;
+  selected: string | null;
+  onSelect: (session: string) => void;
+}
+
+export function Sidebar({ shell, selected, onSelect }: Props) {
+  const { daemon } = shell;
+  return (
+    <aside className="flex min-h-0 flex-col bg-g0">
+      <div className="px-4 pt-4 pb-3">
+        <div className="flex items-center gap-2 text-[15px] font-semibold">
+          <span className="grid size-5 place-items-center rounded bg-acc text-[11px] font-bold text-acc-ink">R</span>
+          RigApp
+        </div>
+        <div className="mt-1.5 flex items-center gap-1.5 text-[11px] whitespace-nowrap text-ink2">
+          <StatusDot tone={daemon.ok ? "acc" : "err"} />
+          <span className="truncate">
+            OpenRig {daemon.version} · {daemon.host} · {daemon.url.replace("http://", "")}
+          </span>
+        </div>
+      </div>
+      <div className="px-4 pt-3 pb-1 text-xs text-ink3">Projects</div>
+      <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-4">
+        {shell.projects.map((project) => (
+          <ProjectItem key={project.id} project={project} selected={selected} onSelect={onSelect} />
+        ))}
+      </nav>
+    </aside>
+  );
+}
+
+function ProjectItem({ project, selected, onSelect }: { project: Project } & Omit<Props, "shell">) {
+  const [open, setOpen] = useState(true);
+  const seatCount = project.pods.reduce((n, pod) => n + pod.seats.length, 0);
+  const Chevron = open ? ChevronDown : ChevronRight;
+  return (
+    <div className="mb-2">
+      <button
+        className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left hover:bg-g2"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+      >
+        <Chevron className="size-3.5 text-ink3" />
+        <span className="font-semibold">{project.name}</span>
+        <span className="ml-auto text-xs text-ink3">
+          {project.status} · {seatCount} {seatCount === 1 ? "seat" : "seats"}
+        </span>
+      </button>
+      {open &&
+        project.pods.map((pod) => (
+          <div key={pod.name}>
+            <div className="px-7 pt-2 pb-0.5 text-xs text-ink3">{title(pod.name)}</div>
+            {pod.seats.map((seat) => {
+              const state = seatState(seat);
+              return (
+                <button
+                  key={seat.session}
+                  onClick={() => onSelect(seat.session)}
+                  title={`${seat.logicalId} · ${state.label}`}
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-md py-1.5 pr-2 pl-7 text-left hover:bg-g2",
+                    selected === seat.session && "bg-g3 hover:bg-g3",
+                  )}
+                >
+                  <StatusDot tone={state.tone} />
+                  <span>{seat.member}</span>
+                  {project.lead === seat.session && <span className="text-xs text-acc">lead</span>}
+                  <span className="ml-auto text-xs text-ink3">{seat.harness}</span>
+                </button>
+              );
+            })}
+          </div>
+        ))}
+    </div>
+  );
+}

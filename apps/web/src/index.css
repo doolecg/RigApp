@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* Colours from mockups/rigapp-direction.html: one ground in tone steps (g0-g4),
+   one ink, one teal accent, amber for waiting, red for errors. */
+:root {
+  --g0: #0f1012;
+  --g1: #141518;
+  --g2: #1a1c20;
+  --g3: #212328;
+  --g4: #2a2d33;
+  --ink: #e7e7e4;
+  --ink2: #a3a5ab;
+  --ink3: #6e717a;
+  --acc: #35b39b;
+  --acc-ink: #06201b;
+  --acc-soft: #173a34;
+  --warn: #d6a54a;
+  --err: #e0625b;
+  --idle: #5c6068;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --g0: #eceae6;
+    --g1: #f6f5f2;
+    --g2: #ffffff;
+    --g3: #e9e7e3;
+    --g4: #dedbd6;
+    --ink: #1b1c1e;
+    --ink2: #55585e;
+    --ink3: #878a91;
+    --acc: #127a68;
+    --acc-ink: #ffffff;
+    --acc-soft: #d5ece7;
+    --warn: #a8741a;
+    --err: #c23d36;
+    --idle: #9a9da3;
+    color-scheme: light;
+  }
+}
+
+@theme inline {
+  --color-g0: var(--g0);
+  --color-g1: var(--g1);
+  --color-g2: var(--g2);
+  --color-g3: var(--g3);
+  --color-g4: var(--g4);
+  --color-ink: var(--ink);
+  --color-ink2: var(--ink2);
+  --color-ink3: var(--ink3);
+  --color-acc: var(--acc);
+  --color-acc-ink: var(--acc-ink);
+  --color-acc-soft: var(--acc-soft);
+  --color-warn: var(--warn);
+  --color-err: var(--err);
+  --color-idle: var(--idle);
+  --font-sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--g1);
+  color: var(--ink);
+  font: 13px/1.45 var(--font-sans);
+}

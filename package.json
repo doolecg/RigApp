@@ -1,0 +1,17 @@
+{
+  "name": "rigapp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @rigapp/server --filter @rigapp/web run dev",
+    "build": "pnpm --filter @rigapp/web run build",
+    "start": "pnpm --filter @rigapp/server run start",
+    "test": "pnpm -r run test",
+    "typecheck": "pnpm -r run typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}

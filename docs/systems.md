@@ -1,6 +1,6 @@
 # RigApp: systems
 
-What each system is, where it lives and how it connects to the others. Update when a system is added or changes. Nothing is built yet (2026-10-29); this records the planned systems and what the OpenRig daemon really offers.
+What each system is, where it lives and how it connects to the others. Update when a system is added or changes. M1 in progress (2026-10-29): the server and web UI exist; desktop and seat tools are still planned.
 
 ## OpenRig daemon (external, the only driver)
 - **What it does:** runs rigs (projects) of seats (threads) in tmux. RigApp drives it and never talks to a harness directly.
@@ -53,16 +53,18 @@ Things RigApp needs that have no route. Each has a stopgap; each is a candidate 
 8. **No lead-seat field.** Fallback: first `delegates_to` root, else the first agent seat.
 9. **Terminal resize.** Fixed 90x27 by design.
 
-## RigApp server (planned, `apps/server`)
+## RigApp server (`apps/server`)
 - **What it does:** the only process that talks to OpenRig. Finds the daemon (WSL on Windows, local on Linux, or a set address), merges its SSE streams and session files into one snapshot-then-events stream per project and per thread, and serves the built web UI.
 - **Where:** `apps/server` (Node, runs on Windows or Linux natively).
 - **Talks to:** OpenRig daemon (HTTP/SSE/WS, no Origin header); the web UI over one WebSocket (`/ws`, typed envelope, T3-style snapshot + sequenced events); WSL files through `\\wsl$`; `wsl.exe` only for the stopgaps above.
-- **Saved:** settings and keybinds in the user data folder. No copy of OpenRig state.
+- **Built so far:** `src/setup.ts` finds the daemon (`RIGAPP_DAEMON_URL`, else the port in `~/.openrig/daemon.json` read through `wsl.exe`, else 7433) and, when it does not answer, checks WSL2 (`wsl.exe -l -v`, distro from `RIGAPP_WSL_DISTRO` or the default), tmux and `rig --version` (through `bash -ic` so nvm's PATH loads). `src/hub.ts` follows `/api/events?replay=0` and `/api/activity/events`, re-reads `/api/ps`, `/api/rigs/:id` and `/api/rigs/:id/nodes` at most every 300 ms, and pushes the whole shell to the UI when it changes; while the daemon is down it asks `/healthz` every 5 s. `src/bin.ts` serves `apps/web/dist` and `/ws` on `127.0.0.1:7480` (`RIGAPP_PORT`), and refuses WebSocket origins other than its own and the dev UI's.
+- **Wire types:** `packages/contracts` (types only): `Shell` (daemon info, setup checks, projects with pods and seats), `ServerMessage`, `ClientMessage`.
+- **Saved:** settings and keybinds in the user data folder (not built yet). No copy of OpenRig state.
 
-## Web UI (planned, `apps/web`)
+## Web UI (`apps/web`)
 - **What it does:** sidebar of projects and threads, chat, Overview, command palette, right panel, graph, terminal, specs, browser, settings. Built only from shadcn components and lucide icons.
 - **Where:** `apps/web` (React, Vite, Tailwind v4, shadcn).
-- **Talks to:** RigApp server only.
+- **Talks to:** RigApp server only. Dev: Vite on `localhost:7481` proxies `/ws` to 7480 (`pnpm dev`).
 - **Saved:** UI state (panel sizes, last open thread) in local storage.
 
 ## Desktop shell (planned, `apps/desktop`)

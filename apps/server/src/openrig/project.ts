@@ -5,6 +5,11 @@ const HARNESS: Record<string, string> = {
   "claude-code": "Claude Code",
   codex: "Codex",
   pi: "Pi",
+  // Community harnesses are named by whoever wrote the preset; these are the names RigApp expects.
+  "pi-tui": "Pi",
+  opencode: "OpenCode",
+  antigravity: "Antigravity",
+  agy: "Antigravity",
   terminal: "Terminal",
 };
 

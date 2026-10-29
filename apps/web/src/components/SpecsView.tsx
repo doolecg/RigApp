@@ -42,7 +42,7 @@ type Check = { valid: boolean; errors: string[] } | null;
  */
 export function SpecsView({ project }: { project: Project }) {
   const [files, setFiles] = useState<SpecFile[] | null>(null);
-  const [name, setName] = useState<SpecFile["name"]>("rig.yaml");
+  const [id, setId] = useState("rig.yaml");
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [check, setCheck] = useState<Check>(null);
@@ -59,7 +59,7 @@ export function SpecsView({ project }: { project: Project }) {
     });
   useEffect(load, [project.id]);
 
-  const file = files?.find((f) => f.name === name) ?? files?.[0];
+  const file = files?.find((f) => f.id === id) ?? files?.[0];
   const changed = !!file && draft !== file.content;
 
   // One editor per file and mode; the review mode shows the change against what is on disk.
@@ -74,7 +74,7 @@ export function SpecsView({ project }: { project: Project }) {
         basicSetup,
         theme,
         highlight,
-        file.name === "rig.yaml" ? yaml() : markdown(),
+        file.kind === "culture" ? markdown() : yaml(),
         EditorView.editable.of(file.editable),
         EditorView.lineWrapping,
         EditorView.updateListener.of((u) => u.docChanged && setDraft(u.state.doc.toString())),
@@ -93,8 +93,9 @@ export function SpecsView({ project }: { project: Project }) {
     return () => view.destroy();
   }, [review]);
 
+  // Rig and agent specs each have their own OpenRig validator; the culture file is plain Markdown.
   const validate = async () => {
-    const r = await request({ method: "specs.validate", content: draft });
+    const r = await request({ method: "specs.validate", content: draft, agent: file?.kind === "agent" });
     const result = (r.data as Check) ?? { valid: false, errors: [r.error ?? "OpenRig did not answer."] };
     setCheck(result);
     return result.valid;
@@ -102,7 +103,7 @@ export function SpecsView({ project }: { project: Project }) {
 
   const save = async () => {
     if (!file?.root || !file.path || !file.mtime || !file.hash) return;
-    if (file.name === "rig.yaml" && !(await validate())) return;
+    if (file.kind !== "culture" && !(await validate())) return;
     const r = await request({ method: "specs.save", rigId: project.id, root: file.root, path: file.path, content: draft, mtime: file.mtime, hash: file.hash });
     if (!r.ok) return setNote(r.error ?? "Saving failed.");
     setReview(false);
@@ -123,12 +124,13 @@ export function SpecsView({ project }: { project: Project }) {
         <div className="flex gap-0.5 rounded-lg bg-g0 p-0.5" role="tablist">
           {files.map((f) => (
             <button
-              key={f.name}
+              key={f.id}
               role="tab"
-              aria-selected={f.name === file.name}
-              className={cn("rounded-md px-2.5 py-1 font-mono text-xs text-ink2", f.name === file.name && "bg-g3 text-ink")}
+              aria-selected={f.id === file.id}
+              title={f.kind === "agent" ? `Agent ${f.id}` : undefined}
+              className={cn("rounded-md px-2.5 py-1 font-mono text-xs text-ink2", f.id === file.id && "bg-g3 text-ink")}
               onClick={() => {
-                setName(f.name);
+                setId(f.id);
                 setReview(false);
                 setNote(null);
               }}
@@ -139,7 +141,7 @@ export function SpecsView({ project }: { project: Project }) {
         </div>
         {!file.editable && <span className="text-xs text-ink3">{file.reason}</span>}
         <span className="ml-auto" />
-        {file.name === "rig.yaml" && (
+        {file.kind !== "culture" && (
           <Button variant="ghost" className="h-7" onClick={validate}>
             <Check />
             Validate
@@ -160,7 +162,7 @@ export function SpecsView({ project }: { project: Project }) {
       </div>
       {check && (
         <div className={cn("mb-2 rounded-lg bg-g2 px-3 py-2 text-xs", check.valid ? "text-acc" : "text-err")}>
-          {check.valid ? "OpenRig says this spec is valid." : check.errors.map((e) => <div key={e}>{e}</div>)}
+          {check.valid ? `OpenRig says this ${file.kind === "agent" ? "agent" : "spec"} is valid.` : check.errors.map((e) => <div key={e}>{e}</div>)}
         </div>
       )}
       {note && (
@@ -171,7 +173,7 @@ export function SpecsView({ project }: { project: Project }) {
           </button>
         </div>
       )}
-      <div key={file.name} ref={host} className={cn("min-h-0 flex-1 overflow-hidden rounded-lg", review && "hidden")} />
+      <div key={file.id} ref={host} className={cn("min-h-0 flex-1 overflow-hidden rounded-lg", review && "hidden")} />
       {review && <div ref={diffHost} className="min-h-0 flex-1 overflow-hidden rounded-lg" />}
     </div>
   );

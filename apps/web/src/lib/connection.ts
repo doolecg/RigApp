@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import type { ChatItem, ClientMessage, ServerMessage, Shell } from "@rigapp/contracts";
+import type { BrowserState, ChatItem, ClientMessage, ServerMessage, Shell } from "@rigapp/contracts";
 
 // One WebSocket to the RigApp server. The server sends the whole shell on
 // connect and again on every change, so the UI only keeps the latest copy.
@@ -14,14 +14,18 @@ interface State {
   connected: boolean;
   shell: Shell | null;
   threads: Record<string, ThreadState>;
+  /** The seat browser, pushed by the server whenever it changes. */
+  browser: BrowserState | null;
 }
 
-let state: State = { connected: false, shell: null, threads: {} };
+let state: State = { connected: false, shell: null, threads: {}, browser: null };
 const listeners = new Set<() => void>();
 const pending = new Map<number, (message: Extract<ServerMessage, { type: "result" }>) => void>();
 /** Threads some view is showing, with how many views show each. */
 const watched = new Map<string, number>();
 type TermMessage = Extract<ServerMessage, { type: "term" }>;
+type FrameMessage = Extract<ServerMessage, { type: "browser.frame" }>;
+const frameViews = new Set<(message: FrameMessage) => void>();
 /** Terminal views, by seat. Terminal output is streamed to them, not kept in state. */
 const terminals = new Map<string, Set<(message: TermMessage) => void>>();
 // Omit each member of the union separately, so `session` stays allowed.
@@ -61,11 +65,14 @@ function connect() {
   socket.onopen = () => {
     for (const session of watched.keys()) send({ method: "thread.subscribe", session });
     for (const session of terminals.keys()) send({ method: "term.subscribe", session });
+    if (frameViews.size) send({ method: "browser.watch" });
   };
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data) as ServerMessage;
     if (message.type === "shell") set({ connected: true, shell: message.shell });
     else if (message.type === "thread") applyThread(message);
+    else if (message.type === "browser") set({ browser: message.state });
+    else if (message.type === "browser.frame") for (const listener of frameViews) listener(message);
     else if (message.type === "term") for (const listener of terminals.get(message.session) ?? []) listener(message);
     else {
       pending.get(message.id)?.(message);
@@ -98,6 +105,21 @@ export function request(message: Outgoing): Promise<Result> {
     return Promise.resolve({ type: "result", id: 0, ok: false, error: "Not connected to the RigApp server." });
   }
   return new Promise((resolve) => pending.set(send(message), resolve));
+}
+
+/** Sends something that needs no answer, such as a mouse move. */
+export function notify(message: Outgoing): void {
+  send(message);
+}
+
+/** Receives the seat browser's pictures while a view is open; the server streams them only then. */
+export function onBrowserFrame(listener: (message: FrameMessage) => void): () => void {
+  if (frameViews.size === 0) send({ method: "browser.watch" });
+  frameViews.add(listener);
+  return () => {
+    frameViews.delete(listener);
+    if (frameViews.size === 0) send({ method: "browser.unwatch" });
+  };
 }
 
 /** Follows a seat's terminal; call the returned function to stop. */

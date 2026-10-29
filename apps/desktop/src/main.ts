@@ -79,6 +79,7 @@ async function main() {
       script,
       webDist,
       dataDir: app.getPath("userData"),
+      mcpCli: join(app.isPackaged ? join(process.resourcesPath, "mcp") : join(app.getAppPath(), "stage/mcp"), "packages/@playwright/mcp/cli.js"),
       version: app.getVersion(),
       onCrash: showError,
     });
@@ -97,14 +98,26 @@ async function main() {
   }
 }
 
-app.on("before-quit", () => {
-  // On Windows kill() ends only the server, not what it started (the seats' browser),
-  // so end its whole process tree by PID.
-  if (process.platform === "win32" && serverProcess?.pid) {
-    // Quitting is not a crash: stop listening for the exit before ending it.
-    serverProcess.removeAllListeners("exit");
-    spawnSync("taskkill", ["/PID", String(serverProcess.pid), "/T", "/F"], { windowsHide: true });
-  } else serverProcess?.kill();
+let stopping = false;
+app.on("before-quit", (event) => {
+  const child = serverProcess;
+  if (!child || stopping) return;
+  // Quitting is not a crash: stop listening for the exit.
+  event.preventDefault();
+  stopping = true;
+  child.removeAllListeners("exit");
+  // Closing its stdin makes the server stop what it started (the seats' browser) and exit by itself.
+  // Killing it from outside leaves the browser's processes running, so that is only the fallback.
+  const force = setTimeout(() => {
+    if (process.platform === "win32" && child.pid) spawnSync("taskkill", ["/PID", String(child.pid), "/T", "/F"], { windowsHide: true });
+    else child.kill();
+    app.quit();
+  }, 5000);
+  child.once("exit", () => {
+    clearTimeout(force);
+    app.quit();
+  });
+  child.stdin?.end();
 });
 
 app.on("window-all-closed", () => app.quit());

@@ -7,7 +7,7 @@
   "license": "MIT",
   "main": "dist/main.cjs",
   "scripts": {
-    "build": "pnpm --filter @rigapp/web build && vite build -c vite.config.mts --mode server && vite build -c vite.config.mts --mode main && vite build -c vite.config.mts --mode preload",
+    "build": "pnpm --filter @rigapp/web build && vite build -c vite.config.mts --mode server && vite build -c vite.config.mts --mode main && vite build -c vite.config.mts --mode preload && node scripts/stage-mcp.mjs",
     "start": "pnpm build && electron .",
     "dist:win": "pnpm build && electron-builder --win --publish never",
     "dist:linux": "pnpm build && electron-builder --linux --publish never",

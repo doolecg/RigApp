@@ -6,13 +6,16 @@ import { WebSocketServer } from "ws";
 import type { ClientMessage, ServerMessage } from "@rigapp/contracts";
 import { pressKey, sendText } from "./actions.ts";
 import { startBrowser, stopBrowser } from "./browser.ts";
+import { gate } from "./browser-gate.ts";
+import { view } from "./browser-view.ts";
 import { Chats } from "./chat/chats.ts";
 import { listFiles, readText } from "./files.ts";
 import { Hub } from "./hub.ts";
+import { pickFolder } from "./pick.ts";
 import { lifecycle } from "./lifecycle.ts";
 import { loadSettings, saveSettings, settings } from "./settings.ts";
 import { Terminals } from "./terminal.ts";
-import { banks, explore, recall, seatTools } from "./tools.ts";
+import { banks, explore, localModels, recall, seatTools } from "./tools.ts";
 
 const PORT = Number(process.env.RIGAPP_PORT ?? 7480);
 // The Vite dev server proxies /ws here during `pnpm dev`.
@@ -73,8 +76,12 @@ wss.on("connection", (socket) => {
   const terms = new Set<string>();
   send(hub.message());
   hub.listeners.add(send);
+  send({ type: "browser", state: gate.state() });
+  gate.listeners.add(send);
   socket.on("close", () => {
     hub.listeners.delete(send);
+    gate.listeners.delete(send);
+    view.unwatch(send);
     for (const session of threads) chats.unsubscribe(session, send);
     for (const session of terms) terminals.unsubscribe(session, send);
   });
@@ -102,6 +109,25 @@ wss.on("connection", (socket) => {
         break;
       case "term.input":
         send({ type: "result", id: request.id, ...(await terminals.input(request.session, request.data)) });
+        return;
+      case "browser.watch":
+        view.watch(send);
+        break;
+      case "browser.unwatch":
+        view.unwatch(send);
+        break;
+      case "browser.answer":
+        gate.answer(request.ask, request.answer);
+        break;
+      case "browser.control":
+        gate.setControl(request.on);
+        break;
+      case "browser.input":
+        // Fired on every mouse move: no answer is sent back.
+        await view.input(request.event).catch(() => {});
+        return;
+      case "browser.go":
+        send({ type: "result", id: request.id, ...(await view.go(request.url)) });
         return;
       case "specs.load":
       case "specs.validate":
@@ -138,8 +164,16 @@ wss.on("connection", (socket) => {
         hub.settingsChanged(moved);
         break;
       }
+      case "pick.folder": {
+        const picked = await pickFolder();
+        send({ type: "result", id: request.id, ok: picked.ok, error: picked.error, data: { path: picked.path ?? null } });
+        return;
+      }
       case "tools.banks":
         send({ type: "result", id: request.id, ...(await banks()) });
+        return;
+      case "tools.localModels":
+        send({ type: "result", id: request.id, ...(await localModels()) });
         return;
       case "tools.seatTools":
         send({ type: "result", id: request.id, ...(await seatTools(hub.wslDistro)) });
@@ -199,3 +233,5 @@ server.listen(PORT, "127.0.0.1", () => console.log(`RigApp on http://127.0.0.1:$
 await hub.check();
 if (settings().tools.browser) await startBrowser(hub.wslDistro);
 process.on("exit", stopBrowser);
+// The desktop app holds this process's stdin open; when it closes, the app is quitting or gone, so stop the browser and leave.
+if (process.env.RIGAPP_EXIT_WITH_PARENT) process.stdin.on("close", () => process.exit(0)).resume();

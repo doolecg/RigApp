@@ -56,9 +56,13 @@ export interface FileEntry {
   size: number;
 }
 
-/** A rig's spec or culture file in the Specs tab. Editable files carry what OpenRig needs to save them safely. */
+/** A rig's spec, culture or agent file in the Specs tab. Editable files carry what OpenRig needs to save them safely. */
 export interface SpecFile {
-  name: "rig.yaml" | "CULTURE.md";
+  /** Unique within the list: the file name, or the agent_ref for an agent. */
+  id: string;
+  /** What the tab shows: the file name, or the agent's name. */
+  name: string;
+  kind: "rig" | "culture" | "agent";
   content: string;
   editable: boolean;
   /** Why it is read-only, when it is. */
@@ -181,8 +185,55 @@ export interface Settings {
   keybindings: Record<string, string>;
   /** Panels that talk to local tools. Off until you turn them on; none of them adds anything to a seat. */
   /** `browser` starts a headless browser that seats reach through mcptoon. */
-  tools: { hindsight: boolean; hindsightUrl: string; codegraph: boolean; browser: boolean };
+  tools: { hindsight: boolean; hindsightUrl: string; codegraph: boolean; browser: boolean; localModels: string[] };
 }
+
+/** One local model server that answered `/v1/models`. */
+export interface LocalModelServer {
+  /** Ollama, LM Studio, llama.cpp, or "Custom" for an address you added. */
+  name: string;
+  /** Base address, e.g. http://localhost:11434 . */
+  url: string;
+  models: string[];
+}
+
+/** A seat browser action waiting for your answer. */
+export interface BrowserAsk {
+  id: number;
+  /** The Playwright tool, e.g. browser_navigate. */
+  tool: string;
+  /** What it will do, in words; typed text is never shown. */
+  summary: string;
+}
+
+export interface BrowserLogEntry {
+  id: number;
+  at: number;
+  tool: string;
+  summary: string;
+  outcome: "ran" | "allowed" | "denied" | "paused";
+}
+
+/** The seat browser: pushed to every connected UI whenever it changes. */
+export interface BrowserState {
+  running: boolean;
+  /** The page seats and you are looking at. */
+  page: { url: string; title: string } | null;
+  /** You hold the browser: seat actions are refused until you hand it back. */
+  control: boolean;
+  /** Seat actions run without asking until the browser is turned off. */
+  allowAll: boolean;
+  asks: BrowserAsk[];
+  /** Newest last. */
+  log: BrowserLogEntry[];
+}
+
+/** What you do in the Browser tab while you hold the browser. Positions are CSS pixels of the page. */
+export type BrowserInput =
+  | { kind: "mouse"; type: "move" | "down" | "up"; x: number; y: number; button: "left" | "middle" | "right"; clicks: number }
+  | { kind: "wheel"; x: number; y: number; dx: number; dy: number }
+  | { kind: "key"; type: "down" | "up"; key: string; code: string; keyCode: number; text: string; modifiers: number }
+  | { kind: "text"; text: string };
 
 export interface Shell {
   daemon: DaemonInfo;
@@ -212,6 +263,9 @@ export type ServerMessage =
    * `preview`: the whole pane as text, re-read every few seconds, to replace. `ended`: the socket closed.
    */
   | { type: "term"; session: string; mode: "live" | "preview" | "ended"; data?: string; screen?: string }
+  | { type: "browser"; state: BrowserState }
+  /** A picture (base64 JPEG) of the seat browser's page, sent only while a Browser tab is open. width and height are the page size in CSS pixels. */
+  | { type: "browser.frame"; data: string; width: number; height: number }
   /** `reason` is the daemon's refusal code when it refused a send. */
   | {
       type: "result";
@@ -241,7 +295,7 @@ export type ClientMessage =
   /** Answers SpecFile[]. */
   | { id: number; method: "specs.load"; rigId: string }
   /** Answers { valid, errors } from OpenRig's RigSpec validator. */
-  | { id: number; method: "specs.validate"; content: string }
+  | { id: number; method: "specs.validate"; content: string; agent?: boolean }
   | { id: number; method: "specs.save"; rigId: string; root: string; path: string; content: string; mtime: string; hash: string }
   /** `plan` only forecasts; without it the rig starts (its seats spend tokens). */
   | { id: number; method: "rig.up"; rigId: string; plan: boolean }
@@ -269,9 +323,19 @@ export type ClientMessage =
   | { id: number; method: "bundle.inspect"; path: string }
   /** Installs a bundle into a folder (Linux paths); `plan` only forecasts. */
   | { id: number; method: "bundle.install"; path: string; targetRoot: string; plan: boolean }
+  /** Opens the system folder picker on this computer; answers { path } (null when cancelled). */
+  | { id: number; method: "pick.folder" }
   | { id: number; method: "tools.banks" }
+  /** Answers LocalModelServer[]: the OpenAI-compatible servers found on this PC and the models each one lists. */
+  | { id: number; method: "tools.localModels" }
   /** Answers { mcptoon, hindsight, codegraph, browser }: versions or null, and the browser's address while it runs. */
   | { id: number; method: "tools.seatTools" }
   | { id: number; method: "tools.recall"; bank: string; query: string }
+  | { id: number; method: "browser.watch" | "browser.unwatch" }
+  /** once: run this action; all: run this and every later one until the browser is turned off. */
+  | { id: number; method: "browser.answer"; ask: number; answer: "once" | "all" | "deny" }
+  | { id: number; method: "browser.control"; on: boolean }
+  | { id: number; method: "browser.input"; event: BrowserInput }
+  | { id: number; method: "browser.go"; url: string }
   /** Answers { folder, text }: CodeGraph's explore output for the seat's folder. */
   | { id: number; method: "tools.explore"; session: string; query: string };

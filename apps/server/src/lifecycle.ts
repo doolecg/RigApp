@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { posix } from "node:path";
 import type { ClientMessage, FoundSession, LibrarySpec, SearchHit, SnapshotInfo, SpecFile, UsageWindow } from "@rigapp/contracts";
 import type { Hub } from "./hub.ts";
 
@@ -59,35 +60,65 @@ function failure(json: unknown, status: number): string {
   return body?.message ?? body?.errors?.join("; ") ?? body?.error ?? body?.reason ?? `OpenRig answered ${status}.`;
 }
 
+type FileRoot = { name: string; path: string };
+const READ_ONLY = "This file is outside OpenRig's files roots (set OPENRIG_FILES_ALLOWLIST to edit it), so it is read-only here.";
+
+/** A file under one of the daemon's files roots, read through `/api/files/read` so it can be saved safely. */
+async function readUnderRoot(url: string, roots: FileRoot[], absPath: string): Promise<Omit<SpecFile, "id" | "name" | "kind"> | null> {
+  const root = roots.find((r) => absPath.startsWith(`${r.path}/`));
+  if (!root) return null;
+  const path = absPath.slice(root.path.length + 1);
+  const read = await call(url, "GET", `/api/files/read?root=${encodeURIComponent(root.name)}&path=${encodeURIComponent(path)}`);
+  const file = read.json as { content?: string; mtime?: string; contentHash?: string };
+  if (!read.ok || typeof file.content !== "string") return null;
+  return { content: file.content, editable: true, root: root.name, path, mtime: file.mtime, hash: file.contentHash };
+}
+
 /**
- * The rig's spec and culture files. Files under one of the daemon's files roots are read
- * and saved through `/api/files/*`; anything else (built-in specs) is shown read-only.
+ * The folder an agent_ref points at, as OpenRig resolves it: `local:` is relative to the
+ * rig's folder, `path:` is absolute. Other kinds (`builtin:terminal`) have no agent.yaml.
+ */
+export function agentFolder(ref: string, rigRoot: string): string | null {
+  if (ref.startsWith("local:")) return ref.length > 6 ? posix.resolve(rigRoot, ref.slice(6)) : null;
+  if (ref.startsWith("path:")) return ref.length > 5 ? ref.slice(5) : null;
+  return null;
+}
+
+/**
+ * The rig's spec, culture and agent files. Files under one of the daemon's files roots are
+ * read and saved through `/api/files/*`; anything else (built-in specs) is shown read-only.
+ * One agent.yaml per distinct agent the seats use, whatever their harness.
  */
 async function loadSpecs(url: string, hub: Hub, rigId: string): Promise<SpecFile[]> {
   const exported = await call(url, "GET", `/api/rigs/${rigId}/spec`);
   if (!exported.ok) throw new Error(failure(exported.json, exported.status));
   const rigRoot = decodeURIComponent(exported.headers.get("x-rig-root") ?? "");
-  const roots = ((await call(url, "GET", "/api/files/roots")).json as { roots?: { name: string; path: string }[] }).roots ?? [];
-  const root = roots.find((r) => rigRoot.startsWith(`${r.path}/`));
+  const roots = ((await call(url, "GET", "/api/files/roots")).json as { roots?: FileRoot[] }).roots ?? [];
   const files: SpecFile[] = [];
-  for (const name of ["rig.yaml", "CULTURE.md"] as const) {
-    if (root) {
-      const path = `${rigRoot.slice(root.path.length + 1)}/${name}`;
-      const read = await call(url, "GET", `/api/files/read?root=${encodeURIComponent(root.name)}&path=${encodeURIComponent(path)}`);
-      const file = read.json as { content?: string; mtime?: string; contentHash?: string };
-      if (read.ok && typeof file.content === "string") {
-        files.push({ name, content: file.content, editable: true, root: root.name, path, mtime: file.mtime, hash: file.contentHash });
-        continue;
-      }
-    }
-    const why = "This file is outside OpenRig's files roots (set OPENRIG_FILES_ALLOWLIST to edit it), so it is read-only here.";
-    if (name === "rig.yaml") files.push({ name, content: exported.raw, editable: false, reason: why });
-    else {
-      const text = await readFile(hub.localPath(`${rigRoot}/${name}`), "utf8").catch(() => null);
-      if (text !== null) files.push({ name, content: text, editable: false, reason: why });
-    }
+
+  const rig = (await readUnderRoot(url, roots, `${rigRoot}/rig.yaml`)) ?? { content: exported.raw, editable: false, reason: READ_ONLY };
+  files.push({ id: "rig.yaml", name: "rig.yaml", kind: "rig", ...rig });
+
+  const culture = (await readUnderRoot(url, roots, `${rigRoot}/CULTURE.md`)) ?? (await readOnly(hub, `${rigRoot}/CULTURE.md`));
+  if (culture) files.push({ id: "CULTURE.md", name: "CULTURE.md", kind: "culture", ...culture });
+
+  const seen = new Set<string>();
+  const refs = hub.projects().find((p) => p.id === rigId)?.pods.flatMap((pod) => pod.seats.map((seat) => seat.agentRef)) ?? [];
+  for (const ref of refs) {
+    const folder = ref ? agentFolder(ref, rigRoot) : null;
+    if (!ref || !folder || seen.has(folder)) continue;
+    seen.add(folder);
+    const file = (await readUnderRoot(url, roots, `${folder}/agent.yaml`)) ?? (await readOnly(hub, `${folder}/agent.yaml`));
+    if (!file) continue;
+    const name = /^name: *["']?([\w .-]+)/m.exec(file.content)?.[1]?.trim() || posix.basename(folder);
+    files.push({ id: ref, name, kind: "agent", ...file });
   }
   return files;
+}
+
+async function readOnly(hub: Hub, absPath: string): Promise<Omit<SpecFile, "id" | "name" | "kind"> | null> {
+  const text = await readFile(hub.localPath(absPath), "utf8").catch(() => null);
+  return text === null ? null : { content: text, editable: false, reason: READ_ONLY };
 }
 
 export async function lifecycle(hub: Hub, request: Request): Promise<Answer> {
@@ -97,7 +128,7 @@ export async function lifecycle(hub: Hub, request: Request): Promise<Answer> {
       case "specs.load":
         return { ok: true, data: await loadSpecs(url, hub, request.rigId) };
       case "specs.validate": {
-        const r = await call(url, "POST", "/api/rigs/import/validate", request.content, true);
+        const r = await call(url, "POST", request.agent ? "/api/agents/validate" : "/api/rigs/import/validate", request.content, true);
         const body = r.json as { valid?: boolean; errors?: string[] };
         return { ok: true, data: { valid: !!body.valid, errors: body.errors ?? [] } };
       }

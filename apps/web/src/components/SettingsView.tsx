@@ -1,7 +1,7 @@
-import { RefreshCw, RotateCcw } from "lucide-react";
+import { RefreshCw, RotateCcw, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import Markdown from "react-markdown";
-import type { DesktopBridge, Settings, Shell, UpdateState } from "@rigapp/contracts";
+import type { DesktopBridge, LocalModelServer, Settings, Shell, UpdateState } from "@rigapp/contracts";
 import { request } from "@/lib/connection";
 import { bindings, COMMANDS, comboOf, label, type CommandId } from "@/lib/keys";
 import { cn } from "@/lib/utils";
@@ -64,6 +64,109 @@ function Updates({ state }: { state: UpdateState }) {
           <Markdown>{state.notes}</Markdown>
         </div>
       )}
+    </>
+  );
+}
+
+/**
+ * OpenAI-compatible servers on this PC (Ollama, LM Studio, llama.cpp, or an address you add).
+ * Seats and Hindsight can use them; RigApp only lists what is there and changes nothing.
+ */
+function LocalModels({ settings }: { settings: Settings }) {
+  const [servers, setServers] = useState<LocalModelServer[] | null>(null);
+  const [adding, setAdding] = useState("");
+  const extra = settings.tools.localModels;
+
+  const check = () => {
+    setServers(null);
+    void request({ method: "tools.localModels" }).then((r) => setServers(r.ok ? (r.data as LocalModelServer[]) : []));
+  };
+  // Looks again whenever the list of added addresses changes.
+  useEffect(check, [extra.join(",")]);
+
+  return (
+    <>
+      <p className="mt-0 text-ink2">
+        Models that run on this computer, so seats and memory can work without a cloud account. RigApp only looks; it never starts, installs
+        or changes them.
+      </p>
+      {servers === null && <p className="text-ink2">Looking for local model servers</p>}
+      {servers?.map((s) => (
+        <div key={s.url} className="mb-2 rounded-lg bg-g2 px-3 py-2">
+          <div className="font-medium">
+            {s.name} <span className="font-normal text-ink3">{s.url}</span>
+          </div>
+          <div className="text-ink2">{s.models.length ? s.models.join(", ") : "Running, but it lists no models yet."}</div>
+        </div>
+      ))}
+      {servers?.length === 0 && (
+        <div className="mb-2 rounded-lg bg-g2 px-3 py-2 text-ink2">
+          <p className="mt-0">No local model server answered. RigApp looked at Ollama (11434), LM Studio (1234), llama.cpp (8080) and any address you added.</p>
+          <p className="mb-0">
+            To set one up: install Ollama from ollama.com, then in a terminal run <code>ollama pull &lt;model&gt;</code> with a model name from
+            ollama.com/library. Ollama starts by itself; press Check again.
+          </p>
+        </div>
+      )}
+      <div className="flex flex-wrap gap-2">
+        <Button variant="ghost" className="bg-g3" disabled={servers === null} onClick={check}>
+          <RefreshCw />
+          Check again
+        </Button>
+      </div>
+      <form
+        className="mt-3 flex gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const address = adding.trim();
+          if (address && !extra.includes(address)) save({ tools: { ...settings.tools, localModels: [...extra, address] } });
+          setAdding("");
+        }}
+      >
+        <input
+          aria-label="Another model server address"
+          placeholder="Another server, e.g. http://192.168.1.20:8000"
+          className="flex-1 rounded-md bg-g2 px-2.5 py-1.5 text-ink outline-none focus:outline-acc"
+          value={adding}
+          onChange={(e) => setAdding(e.target.value)}
+        />
+        <Button type="submit" disabled={!adding.trim()}>
+          Add
+        </Button>
+      </form>
+      {extra.map((address) => (
+        <div key={address} className="mt-1 flex items-center gap-2 text-ink2">
+          <span className="flex-1">{address}</span>
+          <Button variant="ghost" size="icon" aria-label={`Remove ${address}`} onClick={() => save({ tools: { ...settings.tools, localModels: extra.filter((a) => a !== address) } })}>
+            <X />
+          </Button>
+        </div>
+      ))}
+      <div className="mt-4 rounded-lg bg-g2 px-3 py-2 text-ink2">
+        <p className="mt-0 font-medium text-ink">Use one for Hindsight memory</p>
+        <p className="mt-0">
+          RigApp does not change Hindsight. Hindsight reads its model from environment settings, so change them where you start it. Here it
+          runs in Docker (the container named hindsight):
+        </p>
+        <ol className="my-0 pl-5">
+          <li>
+            Set <code>HINDSIGHT_API_LLM_PROVIDER</code> to <code>ollama</code> or <code>lmstudio</code>. For llama.cpp or another server use <code>openai</code>.
+          </li>
+          <li>
+            Set <code>HINDSIGHT_API_LLM_BASE_URL</code> to the server's <code>/v1</code> address as the container sees it, e.g.{" "}
+            <code>http://host.docker.internal:11434/v1</code>. On Linux, also give the container <code>--add-host=host.docker.internal:host-gateway</code>.
+          </li>
+          <li>
+            Set <code>HINDSIGHT_API_LLM_MODEL</code> to a model name from the list above, and <code>HINDSIGHT_API_LLM_API_KEY</code> to any word
+            if the server wants one.
+          </li>
+          <li>Recreate the container (for compose: <code>docker compose up -d</code>), so it reads the new settings.</li>
+          <li>
+            Test it: <code>curl -X POST http://localhost:8888/v1/default/banks/&lt;bank&gt;/health/llm</code>. It makes one real call to the model
+            and answers with a status.
+          </li>
+        </ol>
+      </div>
     </>
   );
 }
@@ -173,8 +276,12 @@ export function SettingsView({ shell }: { shell: Shell }) {
               checked={settings.tools.browser}
               onChange={(e) => save({ tools: { ...settings.tools, browser: e.target.checked } })}
             />
-            Browser for seats: a headless browser seats can drive through mcptoon (pages they open use the internet)
+            Browser for seats: a browser seats drive through mcptoon. Watch it in the Browser tab, allow or deny each action, or take control (pages they open use the internet)
           </label>
+        </Section>
+
+        <Section title="Local models">
+          <LocalModels settings={settings} />
         </Section>
 
         <Section title="Keyboard shortcuts">

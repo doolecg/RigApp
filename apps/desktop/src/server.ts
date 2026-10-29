@@ -25,13 +25,16 @@ interface Options {
   webDist: string;
   dataDir: string;
   version: string;
+  /** Playwright MCP's cli.js, staged by scripts/stage-mcp.mjs: the bundled server cannot find it in node_modules. */
+  mcpCli: string;
   /** Called if the server stops by itself (a crash), not when we stop it. */
   onCrash: (reason: string) => void;
 }
 
 /** Runs the RigApp server with Electron's own Node and resolves once it says where it listens. */
 export async function startServer(options: Options): Promise<RunningServer> {
-  const port = await freePort(7480);
+  // RIGAPP_PORT_FROM lets a test run start its search elsewhere, away from a RigApp already open.
+  const port = await freePort(Number(process.env.RIGAPP_PORT_FROM ?? 7480));
   const child = spawn(process.execPath, [options.script], {
     // Makes the Electron binary behave as plain Node, so no separate Node install is needed.
     env: {
@@ -41,8 +44,11 @@ export async function startServer(options: Options): Promise<RunningServer> {
       RIGAPP_WEB_DIST: options.webDist,
       RIGAPP_DATA_DIR: options.dataDir,
       RIGAPP_VERSION: options.version,
+      RIGAPP_MCP_CLI: options.mcpCli,
+      RIGAPP_EXIT_WITH_PARENT: "1",
     },
-    stdio: ["ignore", "pipe", "pipe"],
+    // stdin stays open so the server can tell when the app is gone, and so the app can ask it to quit.
+    stdio: ["pipe", "pipe", "pipe"],
     windowsHide: true,
   });
 

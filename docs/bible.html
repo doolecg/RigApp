@@ -233,9 +233,9 @@
   <ul>
     <li>Adopt and bundles done 2026-10-29 (Rig tab). Still to do: editing AgentSpecs. Originally: adopt running tmux sessions into a rig (<code>/api/discovery/*</code>), import and export bundles (<code>/api/bundles/*</code>), and editing AgentSpecs. Parked from M3 to keep it to what could be checked against the live daemon. (2026-10-29)</li>
   </ul>
-  <h3>When a Codex or Pi seat exists</h3>
+  <h3>When a logged-in Codex or an installed Pi exists</h3>
   <ul>
-    <li>Chat for Codex and Pi seats: parsers for their session files, built and tested against a real seat. (moved from M1 Chat, 2026-10-29)</li>
+    <li>Built 2026-10-29 with OpenCode and Antigravity. Still to check: Codex replies and tool calls on a real logged-in session, Pi on a real install, and Antigravity's live approval prompt. (moved from M1 Chat, 2026-10-29)</li>
   </ul>
   <h3>After M4</h3>
   <ul>
@@ -252,6 +252,7 @@
 <h2 id="s8">8. Change log</h2>
 <div class="box">
   <ul>
+    <li>2026-10-29: On dev-0.2.0: chat for Codex, OpenCode, Antigravity and Pi (OpenCode and Antigravity checked on real sessions; Codex replies and Pi unverified: Codex not logged in, Pi not installed); AgentSpec tabs in Specs; Local models in Settings; Browse for folders; a visible seat browser (Browser tab, Allow once / Allow all / Deny, Take control, action log), also in the installed app.</li>
     <li>2026-10-29: On dev-0.2.0: Always allow on prompts, CodeGraph and a headless browser for seats through mcptoon, adopt tmux sessions, export, inspect and install bundles. Codex, Pi and local models stay parked: nothing on this PC to test them against.</li>
     <li>2026-10-29: Released 0.1.0 on GitHub (public). Live terminal, Approve (on a real permission prompt) and rig up and down (starter) checked for real. Seat memory through mcptoon built and checked on queue.worker.</li>
     <li>2026-10-29: M4 built: Electron app (bundled server, single instance, opens behind other windows), GitHub updater (start and every 4 hours), Settings (theme, daemon address, rebindable shortcuts, tools, updates, About with the notice), Windows installer. Security pass clean. Release (tag 0.1.0, GitHub release) waits for doole. M5 first half: Memory (Hindsight) and Code (CodeGraph) panels, off by default and costing seats nothing; seat-side tools, browser and local models parked, with mcptoon as the planned route for seat tools.</li>

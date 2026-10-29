@@ -10,7 +10,7 @@ export interface DiffLine {
 const MAX_LINES = 120;
 
 /**
- * The lines an Edit, MultiEdit or Write call changed, or null for other tools.
+ * The lines an Edit, MultiEdit, Write or Codex apply_patch call changed, or null for other tools.
  * Lines the old and new text share at the start and end show as context; what
  * is between shows as removed then added. The harness records no line numbers.
  */
@@ -36,6 +36,15 @@ export function diffLines(name: string, input: Record<string, unknown>): DiffLin
     return input.edits.flatMap((edit: Record<string, unknown>) => pair(edit.old_string, edit.new_string));
   }
   if (name === "Write") return pair("", input.content);
+  // Codex edits with one patch text: file headers, "@@" hunk marks, then +, - and context lines.
+  if (name === "apply_patch" && typeof input.patch === "string") {
+    return input.patch.split("\n").flatMap((line): DiffLine[] => {
+      if (line.startsWith("*** Begin Patch") || line.startsWith("*** End Patch") || !line) return [];
+      if (line.startsWith("*** ") || line.startsWith("@@")) return [{ sign: " ", text: line }];
+      const sign = line[0];
+      return sign === "+" || sign === "-" ? [{ sign, text: line.slice(1) }] : [{ sign: " ", text: line.slice(1) }];
+    });
+  }
   return null;
 }
 

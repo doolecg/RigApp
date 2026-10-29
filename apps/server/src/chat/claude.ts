@@ -1,9 +1,5 @@
 import type { ChatItem } from "@rigapp/contracts";
-
-type ToolItem = Extract<ChatItem, { kind: "tool" }>;
-
-// Tool output can be huge (whole files, long logs); the chat only needs a look.
-const RESULT_LIMIT = 4000;
+import { clip, type LineParser, type ToolItem } from "./common.ts";
 
 interface Block {
   type?: string;
@@ -31,16 +27,12 @@ function resultText(content: unknown): string {
   return content.map((part: Block) => (part.type === "text" ? (part.text ?? "") : `[${part.type}]`)).join("\n");
 }
 
-function clip(text: string): string {
-  return text.length > RESULT_LIMIT ? `${text.slice(0, RESULT_LIMIT)}\n… ${text.length - RESULT_LIMIT} more characters` : text;
-}
-
 /**
  * Turns Claude Code session lines (`~/.claude/projects/<cwd>/<id>.jsonl`) into chat items.
  * It remembers tool calls so a later result line can fill one in. Thinking, sub-agent
  * (sidechain) and bookkeeping lines are left out.
  */
-export class ClaudeParser {
+export class ClaudeParser implements LineParser {
   private tools = new Map<string, ToolItem>();
 
   /** Returns the items these lines added or changed, in order. */

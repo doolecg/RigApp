@@ -13,6 +13,9 @@ files:
 extraResources:
   - from: ../web/dist
     to: web
+  # Playwright MCP for the seat browser, run by the server as a separate Node process (see scripts/stage-mcp.mjs).
+  - from: stage/mcp
+    to: mcp
 
 # Electron's Node starts server.mjs as a separate process, so it must be a real file, not inside the asar.
 asarUnpack:

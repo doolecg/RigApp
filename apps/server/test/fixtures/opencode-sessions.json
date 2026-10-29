@@ -1,0 +1,75 @@
+{
+ "ses_e77c516a6ffeCzhzW09eIzcx7T": {
+  "directory": "E:/REPOS/AI TOOLS/RigApp/test-results/harness-opencode",
+  "rows": [
+   {
+    "id": "msg_1883aee3e001KSD3ASoDsaDcbc",
+    "type": "user",
+    "seq": 4,
+    "time_updated": 1793286946911,
+    "data": "{\"time\":{\"created\":1793286946909},\"text\":\"\\\"Read the file note.txt in this folder with your read tool and tell me what it says in one short sentence.\\\"\",\"files\":[]}"
+   },
+   {
+    "id": "msg_1883b4086001rNjKK2lsDDy1XX",
+    "type": "assistant",
+    "seq": 5,
+    "time_updated": 1793286949373,
+    "data": "{\"time\":{\"created\":1793286946989,\"streamed\":1793286949277,\"completed\":1793286949371},\"agent\":\"build\",\"model\":{\"id\":\"big-pickle\",\"providerID\":\"opencode\"},\"content\":[{\"type\":\"reasoning\",\"text\":\"The working directory is test-results/harness-opencode. Let me read note.txt.\",\"native\":{\"reasoningField\":\"reasoning_content\"},\"time\":{\"created\":1793286949024,\"completed\":1793286949270}},{\"type\":\"tool\",\"id\":\"call_00_kwyls3xo4rizq67nhz7g7kty\",\"name\":\"read\",\"executed\":false,\"state\":{\"status\":\"completed\",\"input\":{\"path\":\"E:\\\\REPOS\\\\AI TOOLS\\\\RigApp\\\\test-results\\\\harness-opencode\\\\note.txt\"},\"content\":[{\"type\":\"text\",\"text\":\"Read file E:\\\\REPOS\\\\AI TOOLS\\\\RigApp\\\\test-results\\\\harness-opencode\\\\note.txt, lines 1-1\\n1: hello from rigapp test\\r\"}],\"metadata\":{\"truncated\":false}},\"time\":{\"created\":1793286949252,\"ran\":1793286949274,\"completed\":1793286949295}}],\"snapshot\":{\"start\":\"16f3abac68acdc92865312e7ff52660c691ee8d8\",\"end\":\"16f3abac68acdc92865312e7ff52660c691ee8d8\",\"files\":[]},\"finish\":\"tool-calls\",\"rawFinish\":\"tool_calls\",\"cost\":0,\"tokens\":{\"input\":19712,\"output\":60,\"reasoning\":19,\"cache\":{\"read\":2048,\"write\":0}}}"
+   },
+   {
+    "id": "msg_1883b4a0a001cIKmQTEGT6roA3",
+    "type": "assistant",
+    "seq": 16,
+    "time_updated": 1793286951088,
+    "data": "{\"time\":{\"created\":1793286949398,\"streamed\":1793286951009,\"completed\":1793286951087},\"agent\":\"build\",\"model\":{\"id\":\"big-pickle\",\"providerID\":\"opencode\"},\"content\":[{\"type\":\"text\",\"text\":\"It says \\\"hello from rigapp test\\\".\"}],\"snapshot\":{\"start\":\"16f3abac68acdc92865312e7ff52660c691ee8d8\",\"end\":\"16f3abac68acdc92865312e7ff52660c691ee8d8\",\"files\":[]},\"finish\":\"stop\",\"rawFinish\":\"stop\",\"cost\":0,\"tokens\":{\"input\":132,\"output\":10,\"reasoning\":0,\"cache\":{\"read\":21760,\"write\":0}}}"
+   },
+   {
+    "id": "msg_1883b50b2001m4GE2FIUTJ7IpC",
+    "type": "idle",
+    "seq": 21,
+    "time_updated": 1793286951091,
+    "data": "{\"time\":{\"created\":1793286951090},\"outcome\":\"succeeded\"}"
+   }
+  ]
+ },
+ "ses_e77c48cd9ffewmIWMjJ3hUvgH8": {
+  "directory": "E:/REPOS/AI TOOLS/RigApp/test-results/harness-opencode",
+  "rows": [
+   {
+    "id": "msg_1883b73ae0018laMnzb3Z12abU",
+    "type": "user",
+    "seq": 4,
+    "time_updated": 1793286980198,
+    "data": "{\"time\":{\"created\":1793286980197},\"text\":\"\\\"Use your edit tool to replace the word hello with goodbye in note.txt. Then reply done.\\\"\",\"files\":[]}"
+   },
+   {
+    "id": "msg_1883bc270001rEhj0X6uvpW3y1",
+    "type": "assistant",
+    "seq": 7,
+    "time_updated": 1793286982648,
+    "data": "{\"time\":{\"created\":1793286980217,\"streamed\":1793286982563,\"completed\":1793286982647},\"agent\":\"build\",\"model\":{\"id\":\"big-pickle\",\"providerID\":\"opencode\"},\"content\":[{\"type\":\"reasoning\",\"text\":\"Let me look at note.txt. Working directory is E:\\\\REPOS\\\\AI TOOLS\\\\RigApp\\\\test-results\\\\harness-opencode.\",\"native\":{\"reasoningField\":\"reasoning_content\"},\"time\":{\"created\":1793286982204,\"completed\":1793286982558}},{\"type\":\"tool\",\"id\":\"call_00_vf476o6nae66jvylwpg6es4i\",\"name\":\"read\",\"executed\":false,\"state\":{\"status\":\"completed\",\"input\":{\"path\":\"E:\\\\REPOS\\\\AI TOOLS\\\\RigApp\\\\test-results\\\\harness-opencode\\\\note.txt\"},\"content\":[{\"type\":\"text\",\"text\":\"Read file E:\\\\REPOS\\\\AI TOOLS\\\\RigApp\\\\test-results\\\\harness-opencode\\\\note.txt, lines 1-1\\n1: hello from rigapp test\\r\"}],\"metadata\":{\"truncated\":false}},\"time\":{\"created\":1793286982539,\"ran\":1793286982561,\"completed\":1793286982569}}],\"snapshot\":{\"start\":\"16f3abac68acdc92865312e7ff52660c691ee8d8\",\"end\":\"16f3abac68acdc92865312e7ff52660c691ee8d8\",\"files\":[]},\"finish\":\"tool-calls\",\"rawFinish\":\"tool_calls\",\"cost\":0,\"tokens\":{\"input\":7420,\"output\":60,\"reasoning\":32,\"cache\":{\"read\":14336,\"write\":0}}}"
+   },
+   {
+    "id": "msg_1883bcc020016GJr8hL3rHrQ4z",
+    "type": "assistant",
+    "seq": 16,
+    "time_updated": 1793286984649,
+    "data": "{\"time\":{\"created\":1793286982671,\"streamed\":1793286984472,\"completed\":1793286984648},\"agent\":\"build\",\"model\":{\"id\":\"big-pickle\",\"providerID\":\"opencode\"},\"content\":[{\"type\":\"tool\",\"id\":\"call_00_6pozrd7m20l5he14rvtd4et6\",\"name\":\"edit\",\"executed\":false,\"state\":{\"status\":\"completed\",\"input\":{\"path\":\"E:\\\\REPOS\\\\AI TOOLS\\\\RigApp\\\\test-results\\\\harness-opencode\\\\note.txt\",\"oldString\":\"hello\",\"newString\":\"goodbye\"},\"content\":[{\"type\":\"text\",\"text\":\"Edited note.txt (1 replacement)\"}],\"metadata\":{\"files\":[{\"file\":\"note.txt\",\"patch\":\"Index: note.txt\\n===================================================================\\n--- note.txt\\n+++ note.txt\\n@@ -1,1 +1,1 @@\\n-hello from rigapp test\\r\\n+goodbye from rigapp test\\r\\n\",\"status\":\"modified\",\"additions\":1,\"deletions\":1}],\"truncated\":false}},\"time\":{\"created\":1793286984447,\"ran\":1793286984468,\"completed\":1793286984500}}],\"snapshot\":{\"start\":\"16f3abac68acdc92865312e7ff52660c691ee8d8\",\"end\":\"16f3abac68acdc92865312e7ff52660c691ee8d8\",\"files\":[]},\"finish\":\"tool-calls\",\"rawFinish\":\"tool_calls\",\"cost\":0,\"tokens\":{\"input\":269,\"output\":95,\"reasoning\":0,\"cache\":{\"read\":21632,\"write\":0}}}"
+   },
+   {
+    "id": "msg_1883bd3d9001L1XYCzW2kL3qtt",
+    "type": "assistant",
+    "seq": 23,
+    "time_updated": 1793286987138,
+    "data": "{\"time\":{\"created\":1793286984685,\"streamed\":1793286987055,\"completed\":1793286987137},\"agent\":\"build\",\"model\":{\"id\":\"big-pickle\",\"providerID\":\"opencode\"},\"content\":[{\"type\":\"text\",\"text\":\"Done.\"}],\"snapshot\":{\"start\":\"16f3abac68acdc92865312e7ff52660c691ee8d8\",\"end\":\"16f3abac68acdc92865312e7ff52660c691ee8d8\",\"files\":[]},\"finish\":\"stop\",\"rawFinish\":\"stop\",\"cost\":0,\"tokens\":{\"input\":126,\"output\":3,\"reasoning\":0,\"cache\":{\"read\":21888,\"write\":0}}}"
+   },
+   {
+    "id": "msg_1883bdd84001jvF7Wp86KoU20B",
+    "type": "idle",
+    "seq": 28,
+    "time_updated": 1793286987141,
+    "data": "{\"time\":{\"created\":1793286987140},\"outcome\":\"succeeded\"}"
+   }
+  ]
+ }
+}

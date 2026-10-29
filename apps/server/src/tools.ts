@@ -48,6 +48,53 @@ export async function recall(bank: string, query: string): Promise<ToolAnswer> {
   }
 }
 
+// The usual homes of OpenAI-compatible servers on one PC; the user can add more in Settings.
+const LOCAL_SERVERS = [
+  { name: "Ollama", url: "http://localhost:11434" },
+  { name: "LM Studio", url: "http://localhost:1234" },
+  { name: "llama.cpp", url: "http://localhost:8080" },
+];
+
+async function getJson(url: string): Promise<unknown> {
+  // A server that is not running refuses at once; a short timeout covers one that hangs.
+  const res = await fetch(url, { signal: AbortSignal.timeout(1500) });
+  if (!res.ok) throw new Error(`answered ${res.status}`);
+  return res.json();
+}
+
+/** Model names from `/v1/models`, the route every OpenAI-compatible server has; Ollama's own `/api/tags` as a second try. */
+async function listModels(base: string, ollama: boolean): Promise<string[] | null> {
+  try {
+    const body = (await getJson(`${base}/v1/models`)) as { data?: { id: string }[] };
+    return (body.data ?? []).map((m) => m.id);
+  } catch {
+    if (!ollama) return null;
+  }
+  try {
+    const body = (await getJson(`${base}/api/tags`)) as { models?: { name: string }[] };
+    return (body.models ?? []).map((m) => m.name);
+  } catch {
+    return null;
+  }
+}
+
+/** Local model servers that answer right now, with the models each lists. Reads only; changes nothing. */
+export async function localModels(): Promise<ToolAnswer> {
+  const known = new Set(LOCAL_SERVERS.map((s) => s.url));
+  const extra = settings().tools.localModels.flatMap((address) => {
+    // Accept "host:port" and an address ending in /v1; keep only the server's base.
+    const base = address.trim().replace(/\/+$/, "").replace(/\/v1$/, "");
+    return base && !known.has(base) ? [{ name: "Custom", url: /^https?:\/\//.test(base) ? base : `http://${base}` }] : [];
+  });
+  const found = await Promise.all(
+    [...LOCAL_SERVERS, ...extra].map(async (s) => {
+      const models = await listModels(s.url, s.name === "Ollama");
+      return models ? { ...s, models } : null;
+    }),
+  );
+  return { ok: true, data: found.filter((s) => s !== null) };
+}
+
 /**
  * Whether seats can reach Hindsight through mcptoon: the CLI where seats run (inside WSL
  * on Windows) and a `hindsight` server in its config. Seats then call tools from Bash,

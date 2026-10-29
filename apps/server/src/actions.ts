@@ -5,8 +5,8 @@ import type { Seat } from "@rigapp/contracts";
 export type SeatKey = "approve" | "deny" | "stop" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 
 /**
- * Claude Code's keys for each action: Enter picks the highlighted first choice
- * ("Yes") on a permission prompt, Escape declines it or stops a working turn.
+ * The keys for each action: Enter picks the highlighted first choice ("Yes") on a
+ * permission prompt, Escape declines it or stops a working turn.
  */
 const KEYS: Record<string, string> = { approve: "Enter", deny: "Escape", stop: "Escape" };
 
@@ -46,19 +46,31 @@ export async function sendText(url: string, seat: Seat, sender: string | null, t
   return { ok: false, reason, error: (reason && REFUSALS[reason]) ?? body.error ?? `OpenRig answered ${res.status}.` };
 }
 
-/**
- * Presses a key in the seat's tmux pane. OpenRig has no approve, deny or interrupt
- * route (systems.md gaps 2 and 3), so this goes to tmux directly: through wsl.exe on
- * Windows, locally on Linux.
- */
-export function pressKey(distro: string | null, seat: Seat, key: SeatKey): Promise<SendResult> {
-  if (!(key in KEYS) && !/^[1-9]$/.test(key)) return Promise.resolve({ ok: false, error: `RigApp does not press "${key}".` });
-  // A digit picks that numbered choice in Claude Code's prompt.
-  const args =["tmux", "send-keys", "-t", seat.session, KEYS[key] ?? key];
+/** Sends one key to the seat's tmux pane: through wsl.exe on Windows, locally on Linux. */
+function send(distro: string | null, session: string, key: string): Promise<SendResult> {
+  const args = ["tmux", "send-keys", "-t", session, key];
   const [cmd, argv] = distro ? ["wsl.exe", ["-d", distro, "-e", ...args]] : ["tmux", args.slice(1)];
   return new Promise((resolve) => {
     execFile(cmd, argv as string[], { windowsHide: true, timeout: 10000 }, (err, _out, stderr) => {
       resolve(err ? { ok: false, error: String(stderr).trim() || err.message } : { ok: true });
     });
   });
+}
+
+/**
+ * Presses a key in the seat's tmux pane. OpenRig has no approve, deny or interrupt
+ * route (systems.md gaps 2 and 3), so this goes to tmux directly.
+ *
+ * The keys above hold for Claude Code and Codex (its prompt reads "1. Yes, proceed (y)" ...
+ * "3. No, and tell Codex what to do differently (esc)", and its running status says "esc to
+ * interrupt"). OpenCode's permission prompt (Allow once / Always allow / Reject) also takes Enter
+ * and Escape, but it stops a turn only on a second Escape: the first arms it ("again to interrupt").
+ */
+export async function pressKey(distro: string | null, seat: Seat, key: SeatKey): Promise<SendResult> {
+  if (!(key in KEYS) && !/^[1-9]$/.test(key)) return { ok: false, error: `RigApp does not press "${key}".` };
+  // A digit picks that numbered choice in the seat's prompt.
+  const first = await send(distro, seat.session, KEYS[key] ?? key);
+  if (key !== "stop" || !first.ok || !/opencode/i.test(seat.runtime)) return first;
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  return send(distro, seat.session, KEYS.stop!);
 }

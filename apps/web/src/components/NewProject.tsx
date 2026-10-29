@@ -1,3 +1,4 @@
+import { FolderOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { LibrarySpec, Shell } from "@rigapp/contracts";
 import { request } from "@/lib/connection";
@@ -15,6 +16,34 @@ interface Stage {
 export function toLinuxPath(path: string): string {
   const drive = /^([A-Za-z]):[\\/]?(.*)$/.exec(path.trim());
   return drive ? `/mnt/${drive[1]!.toLowerCase()}/${drive[2]!.replaceAll("\\", "/")}`.replace(/\/$/, "") : path.trim();
+}
+
+/** Opens the system's folder picker (it runs on this computer, through RigApp's server). */
+export function BrowseButton({ onPick }: { onPick: (path: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <>
+      <Button
+        variant="ghost"
+        className="shrink-0 bg-g3"
+        disabled={open}
+        title={error ?? undefined}
+        onClick={async () => {
+          setOpen(true);
+          const r = await request({ method: "pick.folder" });
+          setOpen(false);
+          setError(r.ok ? null : (r.error ?? "The folder picker did not open."));
+          const path = (r.data as { path: string | null } | undefined)?.path;
+          if (path) onPick(path);
+        }}
+      >
+        <FolderOpen />
+        {open ? "Picking" : "Browse"}
+      </Button>
+      {error && <span className="self-center text-xs text-err">{error}</span>}
+    </>
+  );
 }
 
 /** Start a new rig (project) from one of OpenRig's rig specs, in a folder you pick. */
@@ -78,15 +107,23 @@ export function NewProject({ shell, onClose }: { shell: Shell; onClose: () => vo
           <label className="mb-1 block text-xs text-ink2" htmlFor="np-folder">
             Project folder (a Windows path like E:\REPOS\MyApp works)
           </label>
-          <input
-            id="np-folder"
-            className="mb-3 w-full rounded-md bg-g0 px-2.5 py-1.5 text-ink outline-none focus:outline-acc"
-            value={folder}
-            onChange={(e) => {
-              setFolder(e.target.value);
-              setPlan(null);
-            }}
-          />
+          <div className="mb-3 flex gap-2">
+            <input
+              id="np-folder"
+              className="w-full rounded-md bg-g0 px-2.5 py-1.5 text-ink outline-none focus:outline-acc"
+              value={folder}
+              onChange={(e) => {
+                setFolder(e.target.value);
+                setPlan(null);
+              }}
+            />
+            <BrowseButton
+              onPick={(path) => {
+                setFolder(path);
+                setPlan(null);
+              }}
+            />
+          </div>
           <label className="mb-1 block text-xs text-ink2" htmlFor="np-name">
             Project name
           </label>

@@ -1,4 +1,4 @@
-import { ChevronRight, FileCode, Menu, MessageSquare, Network, PanelLeft, PanelRight, SquareTerminal } from "lucide-react";
+import { ChevronRight, FileCode, Globe, Menu, MessageSquare, Network, PanelLeft, PanelRight, SquareTerminal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useConnection } from "@/lib/connection";
 import { seatState } from "@/lib/seat";
@@ -7,6 +7,8 @@ import { initSeen, markSeen } from "@/lib/seen";
 import { useLight, useThemeAttribute } from "@/lib/theme";
 import { useMedia, useStored } from "@/lib/ui";
 import { cn } from "@/lib/utils";
+import { BrowserAsks } from "./components/BrowserAsks";
+import { BrowserView } from "./components/BrowserView";
 import { ApprovalCard } from "./components/chat/ApprovalCard";
 import { Chat } from "./components/chat/Chat";
 import { Composer } from "./components/chat/Composer";
@@ -26,13 +28,14 @@ const SIDEBAR_WIDTH = 268;
 const clampWidth = (width: number) => Math.min(420, Math.max(220, width));
 
 export type View = "overview" | "seat" | "settings";
-type Tab = "chat" | "graph" | "terminal" | "specs";
+type Tab = "chat" | "graph" | "terminal" | "specs" | "browser";
 
 const TABS: { id: Tab; label: string; icon: typeof MessageSquare }[] = [
   { id: "chat", label: "Chat", icon: MessageSquare },
   { id: "graph", label: "Graph", icon: Network },
   { id: "terminal", label: "Terminal", icon: SquareTerminal },
   { id: "specs", label: "Specs", icon: FileCode },
+  { id: "browser", label: "Browser", icon: Globe },
 ];
 
 export function App() {
@@ -174,7 +177,7 @@ export function App() {
                   {seatState(current.seat).label}
                 </span>
                 <nav className="ml-2 flex items-center gap-0.5 rounded-lg bg-g0 p-0.5" role="tablist" aria-label="Thread views">
-                  {TABS.map(({ id, label, icon: Icon }) => (
+                  {TABS.filter((t) => t.id !== "browser" || shell.settings.tools.browser).map(({ id, label, icon: Icon }) => (
                     <button
                       key={id}
                       role="tab"
@@ -212,6 +215,7 @@ export function App() {
             </Button>
           </div>
         )}
+        <BrowserAsks />
         {view === "settings" ? (
           <SettingsView shell={shell} />
         ) : view === "overview" ? (
@@ -227,6 +231,8 @@ export function App() {
           />
         ) : current && tab === "specs" ? (
           <SpecsView key={current.project.id} project={current.project} />
+        ) : current && tab === "browser" && shell.settings.tools.browser ? (
+          <BrowserView />
         ) : current && tab === "terminal" ? (
           <TerminalView key={current.seat.session} seat={current.seat} />
         ) : current ? (

@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FoundSession, Project } from "@rigapp/contracts";
 import { request } from "@/lib/connection";
 import { title } from "@/lib/seat";
-import { toLinuxPath } from "./NewProject";
+import { BrowseButton, toLinuxPath } from "./NewProject";
 import { Button } from "./ui/button";
 import { Modal } from "./ui/modal";
 
@@ -81,7 +81,10 @@ export function AdoptBundles({ project }: { project: Project }) {
       <label className="mt-2 mb-1 block text-xs text-ink2" htmlFor="bundle-target">
         Folder to install it into
       </label>
-      <input id="bundle-target" className={field} value={target} onChange={(e) => (setTarget(e.target.value), setPlan(null))} />
+      <div className="flex gap-2">
+        <input id="bundle-target" className={field} value={target} onChange={(e) => (setTarget(e.target.value), setPlan(null))} />
+        <BrowseButton onPick={(path) => (setTarget(path), setPlan(null))} />
+      </div>
       <div className="mt-2 flex gap-2">
         <Button variant="ghost" className="h-7 bg-g2" disabled={!bundle.trim()} onClick={() => install(true)}>
           Check with OpenRig

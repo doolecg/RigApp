@@ -1,24 +1,29 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown, ChevronRight, PanelLeft } from "lucide-react";
 import type { Project, Shell } from "@rigapp/contracts";
 import { seatState, title } from "@/lib/seat";
+import { useStored } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 import { StatusDot } from "./StatusDot";
+import { Button } from "./ui/button";
 
 interface Props {
   shell: Shell;
   selected: string | null;
   onSelect: (session: string) => void;
+  onHide: () => void;
 }
 
-export function Sidebar({ shell, selected, onSelect }: Props) {
+export function Sidebar({ shell, selected, onSelect, onHide }: Props) {
   const { daemon } = shell;
   return (
-    <aside className="flex min-h-0 flex-col bg-g0">
+    <aside className="flex h-full min-h-0 flex-col bg-g0">
       <div className="px-4 pt-4 pb-3">
         <div className="flex items-center gap-2 text-[15px] font-semibold">
           <span className="grid size-5 place-items-center rounded bg-acc text-[11px] font-bold text-acc-ink">R</span>
           RigApp
+          <Button variant="ghost" size="icon" className="-mr-1.5 ml-auto" aria-label="Hide sidebar" onClick={onHide}>
+            <PanelLeft />
+          </Button>
         </div>
         <div className="mt-1.5 flex items-center gap-1.5 text-[11px] whitespace-nowrap text-ink2">
           <StatusDot tone={daemon.ok ? "acc" : "err"} />
@@ -37,8 +42,12 @@ export function Sidebar({ shell, selected, onSelect }: Props) {
   );
 }
 
-function ProjectItem({ project, selected, onSelect }: { project: Project } & Omit<Props, "shell">) {
-  const [open, setOpen] = useState(true);
+function ProjectItem({
+  project,
+  selected,
+  onSelect,
+}: { project: Project } & Pick<Props, "selected" | "onSelect">) {
+  const [open, setOpen] = useStored(`rigapp.projectOpen.${project.id}`, true);
   const seatCount = project.pods.reduce((n, pod) => n + pod.seats.length, 0);
   const Chevron = open ? ChevronDown : ChevronRight;
   return (

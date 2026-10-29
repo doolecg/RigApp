@@ -1,4 +1,4 @@
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import type { Project, Seat } from "@rigapp/contracts";
 import { seatState, title } from "@/lib/seat";
@@ -14,7 +14,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function SeatPanel({ project, seat }: { project: Project; seat: Seat }) {
+export function SeatPanel({ project, seat, onHide }: { project: Project; seat: Seat; onHide?: () => void }) {
   const state = seatState(seat);
   const [copied, setCopied] = useState(false);
   const copy = async () => {
@@ -23,8 +23,15 @@ export function SeatPanel({ project, seat }: { project: Project; seat: Seat }) {
     setTimeout(() => setCopied(false), 1500);
   };
   return (
-    <aside className="min-h-0 overflow-y-auto bg-g1 px-5 py-4">
-      <h2 className="mb-2 text-xs font-normal text-ink3">Seat</h2>
+    <aside className="h-full min-h-0 overflow-y-auto bg-g1 px-5 py-4">
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="m-0 text-xs font-normal text-ink3">Seat</h2>
+        {onHide && (
+          <Button variant="ghost" size="icon" className="-my-1.5 -mr-2" aria-label="Hide details" onClick={onHide}>
+            <X />
+          </Button>
+        )}
+      </div>
       <dl className="grid grid-cols-[96px_1fr] gap-x-3 gap-y-1.5">
         <Row label="Session">
           <span className="font-mono text-xs">{seat.session}</span>

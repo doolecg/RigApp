@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 import type { ClientMessage, ServerMessage } from "@rigapp/contracts";
 import { pressKey, sendText } from "./actions.ts";
+import { startBrowser, stopBrowser } from "./browser.ts";
 import { Chats } from "./chat/chats.ts";
 import { listFiles, readText } from "./files.ts";
 import { Hub } from "./hub.ts";
@@ -118,7 +119,17 @@ wss.on("connection", (socket) => {
         return;
       case "settings.set": {
         const moved = request.patch.daemonUrl !== undefined && request.patch.daemonUrl !== settings().daemonUrl;
+        const browserWas = settings().tools.browser;
         await saveSettings(request.patch);
+        if (settings().tools.browser && !browserWas) {
+          const started = await startBrowser(hub.wslDistro);
+          if (!started.ok) await saveSettings({ tools: { ...settings().tools, browser: false } });
+          if (started.error) {
+            hub.settingsChanged(moved);
+            send({ type: "result", id: request.id, ok: started.ok, error: started.error });
+            return;
+          }
+        } else if (!settings().tools.browser && browserWas) stopBrowser();
         hub.settingsChanged(moved);
         break;
       }
@@ -181,3 +192,5 @@ wss.on("connection", (socket) => {
 
 server.listen(PORT, "127.0.0.1", () => console.log(`RigApp on http://127.0.0.1:${PORT}`));
 await hub.check();
+if (settings().tools.browser) await startBrowser(hub.wslDistro);
+process.on("exit", stopBrowser);

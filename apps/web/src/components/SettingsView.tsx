@@ -167,6 +167,14 @@ export function SettingsView({ shell }: { shell: Shell }) {
             />
             Code panel: ask CodeGraph about the code in a seat's folder
           </label>
+          <label className="flex items-center gap-2 py-1">
+            <input
+              type="checkbox"
+              checked={settings.tools.browser}
+              onChange={(e) => save({ tools: { ...settings.tools, browser: e.target.checked } })}
+            />
+            Browser for seats: a headless browser seats can drive through mcptoon (pages they open use the internet)
+          </label>
         </Section>
 
         <Section title="Keyboard shortcuts">

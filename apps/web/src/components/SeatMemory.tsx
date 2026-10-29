@@ -9,6 +9,8 @@ export interface SeatToolState {
   mcptoon: string | null;
   hindsight: boolean;
   codegraph: string | null;
+  /** The browser server's address while it runs. */
+  browser: string | null;
 }
 
 /** What WSL has for seats; asked once and shared by the Memory and Code tabs. */
@@ -108,6 +110,28 @@ export function SeatMemory({ project, bank }: { project: Project; bank: string }
       ready={state && !!state.mcptoon && state.hindsight && !!bank}
       missing={`Seats use Hindsight through mcptoon, inside WSL. ${!state?.mcptoon ? "mcptoon is not installed there." : "mcptoon has no hindsight server yet."}`}
       cost="As a normal MCP server, Hindsight's tool list costs a seat about 19,900 tokens on every turn. Through mcptoon it costs nothing per turn: the seat gets this short note (about 90 tokens) once and calls Hindsight from Bash when it needs to."
+      note={note}
+    />
+  );
+}
+
+/** A headless browser on this computer, driven from Bash; each call passes the seat's permission prompt. */
+export function SeatBrowser({ project }: { project: Project }) {
+  const state = useSeatTools();
+  const note = [
+    "RigApp note from doole: a headless browser is available from Bash through mcptoon.",
+    "Open a page: mcptoon call browser browser_navigate url=<address> --destructive",
+    "Read it: mcptoon call browser browser_snapshot",
+    'Click: mcptoon call browser browser_click element="<what>" ref=<ref from the snapshot> --destructive',
+    "Ask doole before signing in, buying or sending anything. No reply needed.",
+  ].join("\n");
+  return (
+    <SeatNote
+      project={project}
+      heading="Give seats a browser"
+      ready={state && !!state.mcptoon && !!state.browser}
+      missing={!state?.mcptoon ? "Seats use the browser through mcptoon, which is not installed in WSL." : "Turn on Browser for seats in Settings, under Tools, first (then reopen this tab)."}
+      cost="The browser's 25 tools stay out of every seat's turns: the seat gets this short note (about 100 tokens) once. Each call goes through the seat's permission prompt, so you can Approve or Deny it here."
       note={note}
     />
   );

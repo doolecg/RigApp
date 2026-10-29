@@ -11,7 +11,7 @@ const DEFAULTS: Settings = {
   theme: "system",
   daemonUrl: "",
   keybindings: {},
-  tools: { hindsight: false, hindsightUrl: "http://localhost:8888", codegraph: false },
+  tools: { hindsight: false, hindsightUrl: "http://localhost:8888", codegraph: false, browser: false },
 };
 
 let current: Settings = DEFAULTS;

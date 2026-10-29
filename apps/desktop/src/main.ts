@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { app, BrowserWindow, ipcMain, Menu, shell } from "electron";
-import type { ChildProcess } from "node:child_process";
+import { spawnSync, type ChildProcess } from "node:child_process";
 import { startServer } from "./server.ts";
 import { createUpdater } from "./updater.ts";
 
@@ -98,7 +98,13 @@ async function main() {
 }
 
 app.on("before-quit", () => {
-  serverProcess?.kill();
+  // On Windows kill() ends only the server, not what it started (the seats' browser),
+  // so end its whole process tree by PID.
+  if (process.platform === "win32" && serverProcess?.pid) {
+    // Quitting is not a crash: stop listening for the exit before ending it.
+    serverProcess.removeAllListeners("exit");
+    spawnSync("taskkill", ["/PID", String(serverProcess.pid), "/T", "/F"], { windowsHide: true });
+  } else serverProcess?.kill();
 });
 
 app.on("window-all-closed", () => app.quit());

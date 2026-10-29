@@ -11,6 +11,7 @@
     "record-fixtures": "node scripts/record-fixtures.ts"
   },
   "dependencies": {
+    "@playwright/mcp": "^0.0.83",
     "@rigapp/contracts": "workspace:*",
     "ws": "^8.22.0"
   },

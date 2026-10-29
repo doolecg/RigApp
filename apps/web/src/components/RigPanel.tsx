@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { Project, SnapshotInfo, UsageWindow } from "@rigapp/contracts";
 import { ago } from "@/lib/attention";
 import { request } from "@/lib/connection";
+import { SeatBrowser } from "./SeatMemory";
 import { Button } from "./ui/button";
 import { Modal } from "./ui/modal";
 
@@ -39,7 +40,7 @@ function Bar({ label, percent, detail }: { label: string; percent: number; detai
 }
 
 /** The rig's life: up and down, snapshots with restore, and what it costs. */
-export function RigPanel({ project }: { project: Project }) {
+export function RigPanel({ project, browser }: { project: Project; browser: boolean }) {
   const [snapshots, setSnapshots] = useState<SnapshotInfo[] | null>(null);
   const [usage, setUsage] = useState<UsageWindow[]>([]);
   const [ask, setAsk] = useState<Ask | null>(null);
@@ -131,6 +132,8 @@ export function RigPanel({ project }: { project: Project }) {
           ))}
         </ol>
       )}
+
+      {browser && <SeatBrowser project={project} />}
 
       {ask?.kind === "down" && (
         <Modal title={`Stop ${project.name}?`} onClose={() => setAsk(null)}>

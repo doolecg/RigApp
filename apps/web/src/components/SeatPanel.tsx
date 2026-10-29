@@ -27,7 +27,7 @@ export function SeatPanel({
 }: {
   project: Project;
   seat: Seat;
-  tools: { hindsight: boolean; codegraph: boolean };
+  tools: { hindsight: boolean; codegraph: boolean; browser: boolean };
   onHide?: () => void;
 }) {
   const state = seatState(seat);
@@ -66,7 +66,7 @@ export function SeatPanel({
       {tab === "files" ? (
         <FilesView key={seat.session} seat={seat} />
       ) : tab === "rig" ? (
-        <RigPanel key={project.id} project={project} />
+        <RigPanel key={project.id} project={project} browser={tools.browser} />
       ) : tab === "memory" ? (
         <MemoryPanel key={project.id} project={project} />
       ) : tab === "code" ? (

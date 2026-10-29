@@ -170,7 +170,8 @@ export interface Settings {
   /** Only the keys you changed, by command id; the UI holds the defaults. */
   keybindings: Record<string, string>;
   /** Panels that talk to local tools. Off until you turn them on; none of them adds anything to a seat. */
-  tools: { hindsight: boolean; hindsightUrl: string; codegraph: boolean };
+  /** `browser` starts a headless browser that seats reach through mcptoon. */
+  tools: { hindsight: boolean; hindsightUrl: string; codegraph: boolean; browser: boolean };
 }
 
 export interface Shell {
@@ -249,7 +250,7 @@ export type ClientMessage =
   | { id: number; method: "settings.set"; patch: Partial<Settings> }
   /** tools.banks answers string[]; tools.recall answers { id, text }[]. */
   | { id: number; method: "tools.banks" }
-  /** Answers { mcptoon: version or null, hindsight: whether mcptoon has a hindsight server }. */
+  /** Answers { mcptoon, hindsight, codegraph, browser }: versions or null, and the browser's address while it runs. */
   | { id: number; method: "tools.seatTools" }
   | { id: number; method: "tools.recall"; bank: string; query: string }
   /** Answers { folder, text }: CodeGraph's explore output for the seat's folder. */

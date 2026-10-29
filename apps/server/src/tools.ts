@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Seat } from "@rigapp/contracts";
+import { browserState } from "./browser.ts";
 import { inLinux, platform } from "./setup.ts";
 import { settings } from "./settings.ts";
 
@@ -58,9 +59,10 @@ export async function seatTools(distro: string | null): Promise<ToolAnswer> {
   const codegraph = await inLinux(distro, ["bash", "-lc", "cd /mnt/c 2>/dev/null; codegraph --version"]);
   const cg = codegraph.ok ? last(codegraph.out) : null;
   const version = await inLinux(distro, ["bash", "-lc", "mcptoon --version"]);
-  if (!version.ok) return { ok: true, data: { mcptoon: null, hindsight: false, codegraph: cg } };
+  const browser = browserState().url;
+  if (!version.ok) return { ok: true, data: { mcptoon: null, hindsight: false, codegraph: cg, browser } };
   const list = await inLinux(distro, ["bash", "-lc", "mcptoon list"]);
-  return { ok: true, data: { mcptoon: last(version.out), hindsight: /^\s*hindsight\s/m.test(list.out), codegraph: cg } };
+  return { ok: true, data: { mcptoon: last(version.out), hindsight: /^\s*hindsight\s/m.test(list.out), codegraph: cg, browser } };
 }
 
 /** A seat folder on this machine: /mnt/e/x is E:\x on Windows; other WSL paths go through \\wsl.localhost. */

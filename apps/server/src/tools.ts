@@ -2,7 +2,7 @@ import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import type { Seat } from "@rigapp/contracts";
-import { platform } from "./setup.ts";
+import { inLinux, platform } from "./setup.ts";
 import { settings } from "./settings.ts";
 
 export interface ToolAnswer {
@@ -45,6 +45,21 @@ export async function recall(bank: string, query: string): Promise<ToolAnswer> {
   } catch (error) {
     return { ok: false, error: (error as Error).message };
   }
+}
+
+/**
+ * Whether seats can reach Hindsight through mcptoon: the CLI where seats run (inside WSL
+ * on Windows) and a `hindsight` server in its config. Seats then call tools from Bash,
+ * so no tool list sits in their context on every turn.
+ */
+export async function seatTools(distro: string | null): Promise<ToolAnswer> {
+  const version = await inLinux(distro, ["bash", "-lc", "mcptoon --version"]);
+  if (!version.ok) return { ok: true, data: { mcptoon: null, hindsight: false } };
+  const list = await inLinux(distro, ["bash", "-lc", "mcptoon list"]);
+  return {
+    ok: true,
+    data: { mcptoon: version.out.split("\n").pop()?.trim() ?? "", hindsight: /^\s*hindsight\s/m.test(list.out) },
+  };
 }
 
 /** A seat folder on this machine: /mnt/e/x is E:\x on Windows; other WSL paths go through \\wsl.localhost. */

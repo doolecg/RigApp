@@ -69,7 +69,7 @@
 <h2>1. Parts</h2>
 <div class="box">
   <ul class="check">
-    <li class="ticked"><strong>Hindsight:</strong> (Memory panel built; the MCP for seats waits for the per-pod route below) detect the server, a Memory panel (search, knowledge pages), and the Hindsight MCP for pods you pick.</li>
+    <li class="ticked"><strong>Hindsight:</strong> (Memory panel built; seats get it through mcptoon, see Step: Memory for seats) detect the server, a Memory panel (search, knowledge pages), and the Hindsight MCP for pods you pick.</li>
     <li class="ticked"><strong>CodeGraph:</strong> (Code panel built; the MCP for seats waits for the per-pod route below) detect the CLI, a Code panel (explore a symbol, callers), and the CodeGraph MCP for pods you pick.</li>
     <li><strong>Browser:</strong> (not built: needs @playwright/mcp and WSL mirrored networking on your PC; parked in the bible idea map) Operant's browser brought over: an in-app browser tab seats can drive through <code>@playwright/mcp</code>, with Allow, Allow all, Deny, Take control and an action log; or a headless browser in WSL for background work.</li>
     <li><strong>Local models:</strong> (not built: Hindsight's model is Hindsight's own setting, and OpenRig decides Pi seats' models; parked) any OpenAI-compatible server (Ollama, LM Studio, llama.cpp) for Hindsight, and for Pi seats if OpenRig allows it.</li>
@@ -95,6 +95,13 @@
     <li>Open a seat: the right panel gains Memory and Code tabs.</li>
     <li>Memory: pick the project's bank (RigApp guesses it from the seat's folder), type a question, press Enter: Hindsight's matching memories show.</li>
     <li>Code: type a symbol or question, press Enter: CodeGraph's answer for the seat's folder shows.</li>
+  </ol>
+  <h3>Step: Memory for seats (through mcptoon)</h3>
+  <ol>
+    <li>mcptoon is installed in WSL Ubuntu at <code>~/.local/share/mcptoon</code> (its wheel, no pip needed) with the command in <code>~/.local/bin/mcptoon</code>, and <code>~/.mcptoon/config.json</code> has one server, <code>hindsight</code> at <code>http://localhost:8888/mcp</code>. To undo it: delete those two paths and <code>~/.mcptoon</code>.</li>
+    <li>In the Memory tab, under "Give seats this memory", press <strong>Tell Queue</strong> (or another pod): RigApp shows the short note and sends it to that pod's running seats once.</li>
+    <li>Ask that seat something only the project's memory knows. It runs <code>mcptoon call hindsight recall …</code> from Bash. The first time, Claude Code asks permission: approve it in RigApp, or choose "don't ask again for mcptoon call commands" in the seat.</li>
+    <li>Measured 2026-10-29: Hindsight's 39 tools are about 19,900 tokens on every turn as a normal MCP server; through mcptoon a seat pays nothing per turn, about 540 tokens for the one schema it fetches, and answers are cut by about 85%.</li>
   </ol>
 </div>
 

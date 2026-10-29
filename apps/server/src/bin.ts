@@ -11,7 +11,7 @@ import { Hub } from "./hub.ts";
 import { lifecycle } from "./lifecycle.ts";
 import { loadSettings, saveSettings, settings } from "./settings.ts";
 import { Terminals } from "./terminal.ts";
-import { banks, explore, recall } from "./tools.ts";
+import { banks, explore, recall, seatTools } from "./tools.ts";
 
 const PORT = Number(process.env.RIGAPP_PORT ?? 7480);
 // The Vite dev server proxies /ws here during `pnpm dev`.
@@ -124,6 +124,9 @@ wss.on("connection", (socket) => {
       }
       case "tools.banks":
         send({ type: "result", id: request.id, ...(await banks()) });
+        return;
+      case "tools.seatTools":
+        send({ type: "result", id: request.id, ...(await seatTools(hub.wslDistro)) });
         return;
       case "tools.recall":
         send({ type: "result", id: request.id, ...(await recall(request.bank, request.query)) });

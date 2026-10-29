@@ -85,6 +85,10 @@ Things RigApp needs that have no route. Each has a stopgap; each is a candidate 
 - **Memory panel:** `apps/server/src/tools.ts` calls Hindsight at the Settings address: `GET /v1/default/banks`, `POST /v1/default/banks/{bank}/memories/recall`. Off by default.
 - **Code panel:** runs `codegraph explore <query>` in the seat's folder (`/mnt/x/...` becomes `X:\...`), calling the CLI's Node script directly so the query never passes through a shell. Off by default.
 
+## Seat memory through mcptoon
+- **What it is:** mcptoon 0.8.33 in WSL (`~/.local/bin/mcptoon`, run from its wheel in `~/.local/share/mcptoon`), configured in `~/.mcptoon/config.json` with one server, `hindsight` (`http://localhost:8888/mcp`, reachable from WSL by localhost forwarding). Seats call `mcptoon call hindsight recall '{"bank_id":…,"query":…}'` from Bash.
+- **RigApp's part:** `tools.seatTools` checks `mcptoon --version` and `mcptoon list` inside WSL; the Memory tab's "Tell <pod>" sends the pod's running agent seats one note through `/api/transport/send` (`SeatMemory.tsx`). RigApp never runs mcptoon's `quickstart`, `off` or `import --write`, which rewire every agent's MCP setup.
+
 ## Seat tools (planned, M5 second half)
 - **What they do:** Hindsight memory, CodeGraph and a Playwright browser offered to seats through MCP, plus local models through any OpenAI-compatible server. Each is opt-in per pod with its token cost shown; nothing is added to a seat by default.
 - **Talks to:** Hindsight at `http://localhost:8888`, the `codegraph` CLI, `@playwright/mcp`, a local model server. Seats in WSL reach Windows-side tools only with WSL mirrored networking (this PC uses the default NAT mode today).

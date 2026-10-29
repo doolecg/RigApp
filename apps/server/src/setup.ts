@@ -24,7 +24,7 @@ function run(cmd: string, args: string[]): Promise<Run> {
 }
 
 /** Runs a command on the Linux side: inside WSL on Windows, locally on Linux. */
-function inLinux(distro: string | null, args: string[]): Promise<Run> {
+export function inLinux(distro: string | null, args: string[]): Promise<Run> {
   return distro ? run("wsl.exe", ["-d", distro, "-e", ...args]) : run(args[0]!, args.slice(1));
 }
 

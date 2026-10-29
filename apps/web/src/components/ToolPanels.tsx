@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import type { Project, Seat } from "@rigapp/contracts";
 import { request } from "@/lib/connection";
 import { useStored } from "@/lib/ui";
+import { SeatMemory } from "./SeatMemory";
 
 function SearchBox({ placeholder, busy, onSearch }: { placeholder: string; busy: boolean; onSearch: (q: string) => void }) {
   const [query, setQuery] = useState("");
@@ -84,6 +85,7 @@ export function MemoryPanel({ project }: { project: Project }) {
           </li>
         ))}
       </ul>
+      <SeatMemory project={project} bank={bank} />
     </div>
   );
 }

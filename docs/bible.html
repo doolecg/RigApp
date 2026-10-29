@@ -108,6 +108,8 @@
   <tr><td>2026-10-29</td><td>Approve presses Enter, Deny and Stop press Esc in the seat's tmux pane, through wsl.exe; the prompt shown is the bottom of the pane.</td><td>OpenRig has no approve, deny or interrupt route (systems.md gaps 2 and 3).</td></tr>
   <tr><td>2026-10-29</td><td>"Finished" and unread dots compare the daemon's lastActivityAt with when you last opened the seat, kept in the browser.</td><td>No server state needed; see design.md.</td></tr>
   <tr><td>2026-10-29</td><td>Keep going through the milestones without asking; Claude picks its recommended option and notes it.</td><td>doole, 2026-10-29.</td></tr>
+  <tr><td>2026-10-29</td><td>Seats get Hindsight through mcptoon in WSL: RigApp sends a pod a short note (about 90 tokens, once) with two read-only commands, instead of an MCP server whose tool list sits in every turn.</td><td>doole approved mcptoon; measured 19,900 tokens per turn as MCP vs none per turn through mcptoon. See design.md.</td></tr>
+  <tr><td>2026-10-29</td><td>0.1.0 released publicly on GitHub (repo made public so auto-update can read releases).</td><td>doole, 2026-10-29.</td></tr>
   <tr><td>2026-10-29</td><td>Do all five suggestions: Operant reuse, OpenRig pull requests, usage view, snapshot timeline, search.</td><td>doole, 2026-10-29.</td></tr>
 </table>
 <div class="box">
@@ -223,7 +225,7 @@
   </ul>
   <h3>Seat tools, seat side (M5 second half)</h3>
   <ul>
-    <li>Give one pod Hindsight or CodeGraph through <a href="https://forum.langchain.com/t/mcptoon-cli-that-cuts-mcp-tool-discovery-from-2034-to-62-tokens-97-reduction/4345">mcptoon</a>: seats call MCP tools from Bash only when needed, so no tool list rides on every turn (it claims about 97% fewer discovery tokens; to be measured on one seat first). Needs <code>pip install mcptoon</code> in WSL, so doole's OK. Adding an MCP server to one pod directly is not possible today: OpenRig only has <code>claude_mcp: none</code> as an opt-out, and kernel's seats share one folder's <code>.mcp.json</code>. (from doole, 2026-10-29)</li>
+    <li>Done for Hindsight on 2026-10-29 (Memory tab, Tell pod). Still to do: CodeGraph for seats, which needs a Linux Node on the seats' PATH. Original note: give one pod Hindsight or CodeGraph through <a href="https://forum.langchain.com/t/mcptoon-cli-that-cuts-mcp-tool-discovery-from-2034-to-62-tokens-97-reduction/4345">mcptoon</a>: seats call MCP tools from Bash only when needed, so no tool list rides on every turn (it claims about 97% fewer discovery tokens; to be measured on one seat first). Needs <code>pip install mcptoon</code> in WSL, so doole's OK. Adding an MCP server to one pod directly is not possible today: OpenRig only has <code>claude_mcp: none</code> as an opt-out, and kernel's seats share one folder's <code>.mcp.json</code>. (from doole, 2026-10-29)</li>
     <li>Browser for seats: Operant's in-app browser with @playwright/mcp, Allow / Deny / Take control and an action log, or a headless browser in WSL. Needs the @playwright/mcp package and WSL mirrored networking. (from M5, 2026-10-29)</li>
     <li>Local models: an OpenAI-compatible server for Hindsight (a Hindsight setting) and for Pi seats if OpenRig allows. (from M5, 2026-10-29)</li>
   </ul>
@@ -250,6 +252,7 @@
 <h2 id="s8">8. Change log</h2>
 <div class="box">
   <ul>
+    <li>2026-10-29: Released 0.1.0 on GitHub (public). Live terminal, Approve (on a real permission prompt) and rig up and down (starter) checked for real. Seat memory through mcptoon built and checked on queue.worker.</li>
     <li>2026-10-29: M4 built: Electron app (bundled server, single instance, opens behind other windows), GitHub updater (start and every 4 hours), Settings (theme, daemon address, rebindable shortcuts, tools, updates, About with the notice), Windows installer. Security pass clean. Release (tag 0.1.0, GitHub release) waits for doole. M5 first half: Memory (Hindsight) and Code (CodeGraph) panels, off by default and costing seats nothing; seat-side tools, browser and local models parked, with mcptoon as the planned route for seat tools.</li>
     <li>2026-10-29: M3 built: Specs tab (CodeMirror 6, OpenRig validation, diff, save through /api/files/write signed as the rig's human), Rig tab (rig up with OpenRig's plan first, rig down with snapshot, snapshot list with restore, Claude usage windows and seat context), New project from OpenRig's spec library, log search in Ctrl+K. Adopt, bundles and AgentSpec editing parked.</li>
     <li>2026-10-29: M2 built: Graph tab (pods in rows by delegation, links routed and merged), Terminal tab (daemon socket when on, else a 3 s pane copy), Take control with a warning, Operant's xterm options. Added @xyflow/react, @xterm/xterm, @xterm/addon-fit.</li>

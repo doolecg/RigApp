@@ -248,6 +248,8 @@ export type ClientMessage =
   | { id: number; method: "settings.set"; patch: Partial<Settings> }
   /** tools.banks answers string[]; tools.recall answers { id, text }[]. */
   | { id: number; method: "tools.banks" }
+  /** Answers { mcptoon: version or null, hindsight: whether mcptoon has a hindsight server }. */
+  | { id: number; method: "tools.seatTools" }
   | { id: number; method: "tools.recall"; bank: string; query: string }
   /** Answers { folder, text }: CodeGraph's explore output for the seat's folder. */
   | { id: number; method: "tools.explore"; session: string; query: string };

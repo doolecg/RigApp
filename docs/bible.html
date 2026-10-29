@@ -105,6 +105,9 @@
   <tr><td>2026-10-29</td><td>Chat built from seat session files, read-only.</td><td>doole approved M1. OpenRig only serves pane text.</td></tr>
   <tr><td>2026-10-29</td><td>M1 packages: ws, react-markdown, remark-gfm and the shadcn set. No router, state or schema library.</td><td>doole approved M1. Keeps it lean.</td></tr>
   <tr><td>2026-10-29</td><td>Lead seat: the rig's representative, else the first delegates_to root, else the first agent seat; per-project override later in M1.</td><td>doole approved M1.</td></tr>
+  <tr><td>2026-10-29</td><td>Approve presses Enter, Deny and Stop press Esc in the seat's tmux pane, through wsl.exe; the prompt shown is the bottom of the pane.</td><td>OpenRig has no approve, deny or interrupt route (systems.md gaps 2 and 3).</td></tr>
+  <tr><td>2026-10-29</td><td>"Finished" and unread dots compare the daemon's lastActivityAt with when you last opened the seat, kept in the browser.</td><td>No server state needed; see design.md.</td></tr>
+  <tr><td>2026-10-29</td><td>Keep going through the milestones without asking; Claude picks its recommended option and notes it.</td><td>doole, 2026-10-29.</td></tr>
   <tr><td>2026-10-29</td><td>Do all five suggestions: Operant reuse, OpenRig pull requests, usage view, snapshot timeline, search.</td><td>doole, 2026-10-29.</td></tr>
 </table>
 <div class="box">
@@ -120,20 +123,20 @@
 <p>Trunk before branches: M1 is a working skeleton of the whole loop (see projects, talk, approve), then each milestone adds depth. A usefulness review sits after M1. Ticked items are built and checked in the running app.</p>
 
 <div class="box">
-  <div class="ms-head"><h3>Milestone 1 "Projects and threads"</h3><span class="state now">In progress: approved 2026-10-29</span></div>
+  <div class="ms-head"><h3>Milestone 1 "Projects and threads"</h3><span class="state now">Built 2026-10-29, review open</span></div>
   <p class="why">Guide: <code>docs/milestone-1-guide.html</code></p>
   <ul class="check">
-    <li>Monorepo</li>
+    <li class="ticked">Monorepo</li>
     <li class="ticked">Daemon link</li>
     <li class="ticked">Setup screen</li>
     <li class="ticked">Layout</li>
-    <li>Chat</li>
-    <li>Approvals and interrupt</li>
-    <li>Composer</li>
-    <li>Overview</li>
-    <li>Command palette</li>
-    <li>Project kit and repo basics</li>
-    <li>Tests</li>
+    <li class="ticked">Chat</li>
+    <li class="ticked">Approvals and interrupt</li>
+    <li class="ticked">Composer</li>
+    <li class="ticked">Overview</li>
+    <li class="ticked">Command palette</li>
+    <li class="ticked">Project kit and repo basics</li>
+    <li class="ticked">Tests</li>
   </ul>
   <div class="notes" data-key="m1"><label>Your notes on milestone 1</label><textarea></textarea></div>
 </div>
@@ -218,6 +221,10 @@
   <ul>
     <li>Pull requests to OpenRig for the missing routes: approvals, interrupt, spec update, structured messages. Opened only after doole OKs each one, once M1 shows which stopgaps hurt most. (from Claude, 2026-10-29)</li>
   </ul>
+  <h3>When a Codex or Pi seat exists</h3>
+  <ul>
+    <li>Chat for Codex and Pi seats: parsers for their session files, built and tested against a real seat. (moved from M1 Chat, 2026-10-29)</li>
+  </ul>
   <h3>After M4</h3>
   <ul>
     <li>Phone access to the same server (the layout already works at 390 px). (from the prompt, 2026-10-29)</li>
@@ -233,6 +240,7 @@
 <h2 id="s8">8. Change log</h2>
 <div class="box">
   <ul>
+    <li>2026-10-29: M1 built: chat, composer, approvals and Stop, Overview with unread markers, Ctrl+K, Files tab, README and LICENSE, Vitest and Playwright tests. apps/desktop moved to M4; Codex and Pi chat parked until a real seat exists. Review open.</li>
     <li>2026-10-29: M1 layout built. New project moved to M3 (it starts a rig from a spec); the Files tab moved into M1 Chat; the sidebar search box comes with the command palette.</li>
     <li>2026-10-29: bible and M1 guide approved ("Start building"); the look, session-file chat, M1 packages and lead rule moved to settled. M1 in progress; daemon link and setup screen built.</li>
     <li>2026-10-29: page created from the build prompt, doole's answers (Windows and Linux, seat tools in M5, browser, all five suggestions, lean not Operant) and the source study.</li>

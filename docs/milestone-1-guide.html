@@ -54,7 +54,7 @@
 
 <main>
 <h1>Milestone 1 "Projects and threads"</h1>
-<p class="status">State: In progress: approved 2026-10-29</p>
+<p class="status">State: Built 2026-10-29, waiting for your review (section 4)</p>
 
 <div class="box first">
   <strong>Read this first</strong>
@@ -69,17 +69,17 @@
 <h2>1. Parts</h2>
 <div class="box">
   <ul class="check">
-    <li><strong>Monorepo:</strong> pnpm workspace with <code>apps/server</code>, <code>apps/web</code>, <code>apps/desktop</code> and a small <code>packages/contracts</code> for the message types. T3 Code layout.</li>
+    <li class="ticked"><strong>Monorepo:</strong> (<code>apps/desktop</code> comes with the desktop app in M4) pnpm workspace with <code>apps/server</code>, <code>apps/web</code>, <code>apps/desktop</code> and a small <code>packages/contracts</code> for the message types. T3 Code layout.</li>
     <li class="ticked"><strong>Daemon link:</strong> the server finds OpenRig (WSL on Windows, local on Linux, or a set address), checks <code>/healthz</code>, follows <code>/api/events</code> and <code>/api/activity/events</code>, and re-reads <code>/api/ps</code> and seat lists on each change.</li>
     <li class="ticked"><strong>Setup screen:</strong> clear checks for WSL, tmux, the <code>rig</code> CLI and the daemon, with exact steps. Installs nothing.</li>
     <li class="ticked"><strong>Layout:</strong> resizable sidebar (projects, pods, seats), chat column, collapsible right panel (seat details). The search box opens Ctrl+K, so it comes with the command palette; Files comes with Chat; New project moved to M3 (2026-10-29).</li>
-    <li><strong>Chat:</strong> a Files tab in the right panel, and messages read from each seat's session file (Claude Code first, then Codex and Pi), collapsible tool cards, diffs, status dot per thread, unread markers.</li>
-    <li><strong>Approvals and interrupt:</strong> a card when a seat is waiting on a permission prompt, Approve and Deny, and Stop. Answers are sent as keys (stopgap, see systems.md gaps 2 and 3).</li>
-    <li><strong>Composer:</strong> multiline, Enter to send, Shift+Enter for a new line, <code>@seat</code> to direct a message, <code>/</code> rig commands. Sends through <code>/api/transport/send</code>.</li>
-    <li><strong>Overview:</strong> every seat that waits, errored, finished or is working, with one-click actions.</li>
-    <li><strong>Command palette:</strong> Ctrl+K for every action and every seat.</li>
-    <li><strong>Project kit and repo basics:</strong> LICENSE (MIT), README with Disclaimer and credits, Main Run and Dev Run configs.</li>
-    <li><strong>Tests:</strong> Vitest for the daemon client with recorded real responses; Playwright for open a project, open a thread, send a message, approve a prompt.</li>
+    <li class="ticked"><strong>Chat:</strong> (Claude Code seats; Codex and Pi wait for a real Codex or Pi seat to test against) a Files tab in the right panel, and messages read from each seat's session file (Claude Code first, then Codex and Pi), collapsible tool cards, diffs, status dot per thread, unread markers.</li>
+    <li class="ticked"><strong>Approvals and interrupt:</strong> a card when a seat is waiting on a permission prompt, Approve and Deny, and Stop. Answers are sent as keys (stopgap, see systems.md gaps 2 and 3).</li>
+    <li class="ticked"><strong>Composer:</strong> multiline, Enter to send, Shift+Enter for a new line, <code>@seat</code> to direct a message, <code>/</code> rig commands. Sends through <code>/api/transport/send</code>.</li>
+    <li class="ticked"><strong>Overview:</strong> every seat that waits, errored, finished or is working, with one-click actions.</li>
+    <li class="ticked"><strong>Command palette:</strong> Ctrl+K for every action and every seat.</li>
+    <li class="ticked"><strong>Project kit and repo basics:</strong> LICENSE (MIT), README with Disclaimer and credits, Main Run and Dev Run configs.</li>
+    <li class="ticked"><strong>Tests:</strong> Vitest for the daemon client with recorded real responses; Playwright for open a project, open a thread, send a message, approve a prompt.</li>
   </ul>
   <div class="notes" data-key="parts"><label>Your notes on the parts</label><textarea></textarea></div>
 </div>
@@ -121,6 +121,25 @@
     <li>Click any folded card: it opens to show the command and what came back.</li>
     <li>Click <strong>lead</strong> under kernel. In Ubuntu, send it a message with <code>rig send advisor-lead@kernel "Say hello in one line"</code>: within a couple of seconds your message and its reply appear without reloading.</li>
     <li>Click <strong>human</strong> under kernel: it says it is a terminal seat with no chat.</li>
+  </ol>
+  <h3>Step: Composer, approvals and Stop</h3>
+  <ol>
+    <li>Open <strong>worker</strong> under kernel. Type <code>Reply with only the word ok</code> in the box at the bottom and press Enter: your message and the reply appear in the chat.</li>
+    <li>Type <code>@</code>: a list of seats opens. Pick <strong>advisor.lead</strong>: the "To" line changes, and "back to queue.worker" switches back.</li>
+    <li>Type <code>/</code>: Stop, Approve and Deny are listed.</li>
+    <li>While a seat is working, a Stop button shows next to Send. It presses Esc in the seat.</li>
+    <li>When a seat waits on a permission prompt, an amber card shows the prompt with Approve (presses Enter) and Deny (presses Esc). The same seat shows under "Waiting on you" in Overview.</li>
+  </ol>
+  <h3>Step: Overview, unread dots, Ctrl+K and Files</h3>
+  <ol>
+    <li>Click <strong>Overview</strong> in the sidebar: every seat is sorted into Waiting on you, Errored, Finished, Working and Idle. The tabs at the top show one project.</li>
+    <li>When a seat you are not looking at finishes something, a small white dot shows after its name in the sidebar and it moves to "Finished". Opening it clears both.</li>
+    <li>Press Ctrl+K (or click Search), type <code>rev</code> and press Enter: dev.review opens.</li>
+    <li>Open a seat, then the <strong>Files</strong> tab in the right panel: its folder lists. Click a file to read it; the arrow goes back.</li>
+  </ol>
+  <h3>Step: Tests</h3>
+  <ol>
+    <li>In PowerShell in <code>E:\REPOS\AI TOOLS\RigApp</code>: <code>pnpm test</code> (server tests) and <code>pnpm test:e2e</code> (UI tests in a hidden browser). Both should end with everything passed; the send test is skipped unless you set <code>$env:RIGAPP_E2E_SEND = "1"</code> first, because it messages queue.worker.</li>
   </ol>
 </div>
 

@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, LayoutGrid, PanelLeft } from "lucide-react";
+import { ChevronDown, ChevronRight, LayoutGrid, PanelLeft, Search } from "lucide-react";
 import type { Project, Shell } from "@rigapp/contracts";
 import type { View } from "@/App";
 import { entries, needsYou } from "@/lib/attention";
@@ -15,10 +15,11 @@ interface Props {
   selected: string | null;
   onSelect: (session: string) => void;
   onOverview: () => void;
+  onSearch: () => void;
   onHide: () => void;
 }
 
-export function Sidebar({ shell, view, selected, onSelect, onOverview, onHide }: Props) {
+export function Sidebar({ shell, view, selected, onSelect, onOverview, onSearch, onHide }: Props) {
   const { daemon } = shell;
   const seen = useSeen();
   const count = needsYou(entries(shell, seen));
@@ -40,6 +41,14 @@ export function Sidebar({ shell, view, selected, onSelect, onOverview, onHide }:
         </div>
       </div>
       <div className="px-2">
+        <button
+          className="mb-2 flex w-full items-center gap-2 rounded-md bg-g2 px-2.5 py-1.5 text-left text-ink3 hover:text-ink2"
+          onClick={onSearch}
+        >
+          <Search className="size-3.5" />
+          Search
+          <span className="ml-auto font-mono text-[11px]">Ctrl K</span>
+        </button>
         <button
           className={cn(
             "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-g2",

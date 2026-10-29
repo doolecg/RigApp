@@ -8,6 +8,7 @@ import { ApprovalCard } from "./components/chat/ApprovalCard";
 import { Chat } from "./components/chat/Chat";
 import { Composer } from "./components/chat/Composer";
 import { Overview } from "./components/Overview";
+import { Palette } from "./components/Palette";
 import { SeatPanel } from "./components/SeatPanel";
 import { SetupScreen } from "./components/SetupScreen";
 import { Sidebar } from "./components/Sidebar";
@@ -32,6 +33,7 @@ export function App() {
   const roomy = useMedia("(min-width: 1280px)");
   const [drawer, setDrawer] = useState(false);
   const [overlay, setOverlay] = useState(false);
+  const [palette, setPalette] = useState(false);
 
   const projects = shell?.daemon.ok ? shell.projects : [];
   const seats = projects.flatMap((project) => project.pods.flatMap((pod) => pod.seats.map((seat) => ({ project, seat }))));
@@ -52,6 +54,11 @@ export function App() {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setPalette((open) => !open);
+        return;
+      }
       if (event.key !== "Escape") return;
       setDrawer(false);
       setOverlay(false);
@@ -90,6 +97,7 @@ export function App() {
       selected={current?.seat.session ?? null}
       onSelect={select}
       onOverview={openOverview}
+      onSearch={() => setPalette(true)}
       onHide={toggleSidebar}
     />
   );
@@ -160,6 +168,12 @@ export function App() {
           <SeatPanel project={current.project} seat={current.seat} onHide={roomy ? undefined : togglePanel} />
         </div>
       )}
+      <Palette
+        shell={shell}
+        open={palette}
+        onOpenChange={setPalette}
+        actions={{ openSeat: select, openOverview, toggleSidebar, togglePanel }}
+      />
       {!wide && drawer && (
         <div className="absolute inset-0 z-30 flex">
           <div className="w-[min(320px,85vw)]">{sidebar}</div>

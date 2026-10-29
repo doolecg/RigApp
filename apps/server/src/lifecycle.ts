@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import type { ClientMessage, LibrarySpec, SearchHit, SnapshotInfo, SpecFile, UsageWindow } from "@rigapp/contracts";
+import type { ClientMessage, FoundSession, LibrarySpec, SearchHit, SnapshotInfo, SpecFile, UsageWindow } from "@rigapp/contracts";
 import type { Hub } from "./hub.ts";
 
 type Request = Extract<
@@ -17,7 +17,12 @@ type Request = Extract<
       | "library"
       | "up.spec"
       | "usage"
-      | "search";
+      | "search"
+      | "adopt.scan"
+      | "adopt"
+      | "bundle.create"
+      | "bundle.inspect"
+      | "bundle.install";
   }
 >;
 export type LifecycleMethod = Request["method"];
@@ -173,6 +178,51 @@ export async function lifecycle(hub: Hub, request: Request): Promise<Answer> {
             if (!seen || w.asOf > seen.asOf) newest.set(key, { provider: host.provider, window: w.window, usedPercent: w.usedPercent, resetsAt: w.resetsAt, asOf: w.asOf });
           }
         return { ok: true, data: [...newest.values()] };
+      }
+      case "adopt.scan": {
+        await call(url, "POST", "/api/discovery/scan", {});
+        const r = await call(url, "GET", "/api/discovery?status=active");
+        const list = (r.json as { id: string; tmuxSession: string; cwd: string | null; runtimeHint: string }[]) ?? [];
+        return { ok: true, data: list.map((d): FoundSession => ({ id: d.id, session: d.tmuxSession, cwd: d.cwd, runtime: d.runtimeHint })) };
+      }
+      case "adopt": {
+        const r = await call(url, "POST", `/api/discovery/${encodeURIComponent(request.discoveryId)}/adopt`, {
+          rigId: request.rigId,
+          target: { kind: "pod", podId: request.podId, podNamespace: request.podName, memberName: request.member },
+        });
+        hub.nudge();
+        return r.ok ? { ok: true } : { ok: false, error: failure(r.json, r.status) };
+      }
+      case "bundle.create": {
+        const exported = await call(url, "GET", `/api/rigs/${request.rigId}/spec`);
+        const rigRoot = decodeURIComponent(exported.headers.get("x-rig-root") ?? "");
+        const name = hub.projects().find((p) => p.id === request.rigId)?.name ?? "rig";
+        const roots = ((await call(url, "GET", "/api/files/roots")).json as { roots?: { name: string; path: string }[] }).roots ?? [];
+        const workspace = roots.find((r) => r.name === "workspace")?.path;
+        if (!rigRoot || !workspace) return { ok: false, error: "OpenRig gave no rig folder or workspace to write the bundle to." };
+        const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "");
+        const outputPath = `${workspace}/bundles/${name}-${stamp}.rigbundle`;
+        const r = await call(url, "POST", "/api/bundles/create", {
+          specPath: `${rigRoot}/rig.yaml`,
+          rigRoot,
+          bundleName: name,
+          bundleVersion: "1.0.0",
+          outputPath,
+        });
+        return r.ok ? { ok: true, data: { path: outputPath } } : { ok: false, error: failure(r.json, r.status) };
+      }
+      case "bundle.inspect": {
+        const r = await call(url, "POST", "/api/bundles/inspect", { bundlePath: request.path });
+        return r.ok ? { ok: true, data: r.json } : { ok: false, error: failure(r.json, r.status) };
+      }
+      case "bundle.install": {
+        const r = await call(url, "POST", "/api/bundles/install", {
+          bundlePath: request.path,
+          plan: request.plan,
+          ...(request.plan ? {} : { targetRoot: request.targetRoot, autoApprove: true }),
+        });
+        hub.nudge();
+        return r.ok ? { ok: true, data: r.json } : { ok: false, error: failure(r.json, r.status), data: r.json };
       }
       case "search": {
         const seats = hub.allSeats();

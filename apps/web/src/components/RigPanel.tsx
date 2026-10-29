@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { Project, SnapshotInfo, UsageWindow } from "@rigapp/contracts";
 import { ago } from "@/lib/attention";
 import { request } from "@/lib/connection";
+import { AdoptBundles } from "./AdoptBundles";
 import { SeatBrowser } from "./SeatMemory";
 import { Button } from "./ui/button";
 import { Modal } from "./ui/modal";
@@ -134,6 +135,7 @@ export function RigPanel({ project, browser }: { project: Project; browser: bool
       )}
 
       {browser && <SeatBrowser project={project} />}
+      <AdoptBundles project={project} />
 
       {ask?.kind === "down" && (
         <Modal title={`Stop ${project.name}?`} onClose={() => setAsk(null)}>

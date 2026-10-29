@@ -115,6 +115,11 @@ wss.on("connection", (socket) => {
       case "up.spec":
       case "usage":
       case "search":
+      case "adopt.scan":
+      case "adopt":
+      case "bundle.create":
+      case "bundle.inspect":
+      case "bundle.install":
         send({ type: "result", id: request.id, ...(await lifecycle(hub, request)) });
         return;
       case "settings.set": {

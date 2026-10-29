@@ -69,6 +69,14 @@ export interface SpecFile {
   hash?: string;
 }
 
+/** A tmux session OpenRig found that no rig owns yet. */
+export interface FoundSession {
+  id: string;
+  session: string;
+  cwd: string | null;
+  runtime: string;
+}
+
 export interface SnapshotInfo {
   id: string;
   kind: string;
@@ -101,6 +109,8 @@ export interface LibrarySpec {
 }
 
 export interface Pod {
+  /** OpenRig's pod id, needed to adopt a session into the pod. */
+  id: string;
   name: string;
   seats: Seat[];
 }
@@ -249,6 +259,16 @@ export type ClientMessage =
   | { id: number; method: "search"; pattern: string }
   | { id: number; method: "settings.set"; patch: Partial<Settings> }
   /** tools.banks answers string[]; tools.recall answers { id, text }[]. */
+  /** Scans tmux for sessions no rig owns; answers FoundSession[]. */
+  | { id: number; method: "adopt.scan" }
+  /** Adds a found session to a pod as a new member. */
+  | { id: number; method: "adopt"; discoveryId: string; rigId: string; podId: string; podName: string; member: string }
+  /** Packs the rig's spec into a .rigbundle in the daemon's workspace; answers { path }. */
+  | { id: number; method: "bundle.create"; rigId: string }
+  /** Answers OpenRig's description of a bundle (a daemon-side path). */
+  | { id: number; method: "bundle.inspect"; path: string }
+  /** Installs a bundle into a folder (Linux paths); `plan` only forecasts. */
+  | { id: number; method: "bundle.install"; path: string; targetRoot: string; plan: boolean }
   | { id: number; method: "tools.banks" }
   /** Answers { mcptoon, hindsight, codegraph, browser }: versions or null, and the browser's address while it runs. */
   | { id: number; method: "tools.seatTools" }

@@ -25,13 +25,16 @@ test("shows each rig as a project with its seats by pod", async ({ page }) => {
   await expect(seatButton(page, "human")).toContainText("Terminal");
 });
 
-test("opens a thread with its chat, tool cards and a diff", async ({ page }) => {
+// Seats' histories change as they work; the lead's first turn ran `rig whoami`, a Bash call.
+// Diffs are covered by the parser test and the screenshots in the M1 guide.
+test("opens a thread with its chat and tool cards", async ({ page }) => {
   await open(page);
-  await seatButton(page, "build").click();
-  await expect(page.locator("header")).toContainText("dev.build");
-  await expect(page.getByRole("button", { name: /^Bash/ }).first()).toBeVisible();
-  const edit = page.getByRole("button", { name: /^Edit/ }).first();
-  await expect(edit).toHaveAttribute("aria-expanded", "true");
+  await seatButton(page, "lead").click();
+  await expect(page.locator("header")).toContainText("advisor.lead");
+  const card = page.getByRole("button", { name: /^Bash/ }).first();
+  await expect(card).toHaveAttribute("aria-expanded", "false");
+  await card.click();
+  await expect(card).toHaveAttribute("aria-expanded", "true");
 });
 
 test("a terminal seat says it has no chat", async ({ page }) => {

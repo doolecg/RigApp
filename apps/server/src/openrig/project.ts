@@ -59,11 +59,12 @@ export function pickLead(rig: RigDetail, nodes: NodeEntry[]): string | null {
 export function buildProject(ps: PsEntry, rig: RigDetail, nodes: NodeEntry[]): Project {
   // Pods keep the daemon's node order, which follows the rig spec.
   const pods: Pod[] = [];
-  for (const seat of nodes.map(toSeat)) {
+  nodes.forEach((node) => {
+    const seat = toSeat(node);
     const pod = pods.find((p) => p.name === seat.pod);
     if (pod) pod.seats.push(seat);
-    else pods.push({ name: seat.pod, seats: [seat] });
-  }
+    else pods.push({ id: node.podId, name: seat.pod, seats: [seat] });
+  });
   return {
     id: ps.rigId,
     name: ps.name,

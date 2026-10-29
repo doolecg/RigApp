@@ -21,6 +21,7 @@ export interface RigDetail {
 export interface NodeEntry {
   nodeId: string;
   logicalId: string;
+  podId: string;
   podNamespace: string | null;
   canonicalSessionName: string;
   nodeKind: string;

@@ -1,6 +1,9 @@
-import { ChevronDown, ChevronRight, PanelLeft } from "lucide-react";
+import { ChevronDown, ChevronRight, LayoutGrid, PanelLeft } from "lucide-react";
 import type { Project, Shell } from "@rigapp/contracts";
+import type { View } from "@/App";
+import { entries, needsYou } from "@/lib/attention";
 import { seatState, title } from "@/lib/seat";
+import { isUnread, useSeen } from "@/lib/seen";
 import { useStored } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 import { StatusDot } from "./StatusDot";
@@ -8,13 +11,17 @@ import { Button } from "./ui/button";
 
 interface Props {
   shell: Shell;
+  view: View;
   selected: string | null;
   onSelect: (session: string) => void;
+  onOverview: () => void;
   onHide: () => void;
 }
 
-export function Sidebar({ shell, selected, onSelect, onHide }: Props) {
+export function Sidebar({ shell, view, selected, onSelect, onOverview, onHide }: Props) {
   const { daemon } = shell;
+  const seen = useSeen();
+  const count = needsYou(entries(shell, seen));
   return (
     <aside className="flex h-full min-h-0 flex-col bg-g0">
       <div className="px-4 pt-4 pb-3">
@@ -32,10 +39,29 @@ export function Sidebar({ shell, selected, onSelect, onHide }: Props) {
           </span>
         </div>
       </div>
-      <div className="px-4 pt-3 pb-1 text-xs text-ink3">Projects</div>
+      <div className="px-2">
+        <button
+          className={cn(
+            "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-g2",
+            view === "overview" && "bg-g3 hover:bg-g3",
+          )}
+          onClick={onOverview}
+        >
+          <LayoutGrid className="size-3.5 text-ink2" />
+          Overview
+          {count > 0 && <span className="ml-auto text-xs text-warn">{count}</span>}
+        </button>
+      </div>
+      <div className="px-4 pt-4 pb-1 text-xs text-ink3">Projects</div>
       <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-4">
         {shell.projects.map((project) => (
-          <ProjectItem key={project.id} project={project} selected={selected} onSelect={onSelect} />
+          <ProjectItem
+            key={project.id}
+            project={project}
+            selected={view === "seat" ? selected : null}
+            seen={seen}
+            onSelect={onSelect}
+          />
         ))}
       </nav>
     </aside>
@@ -45,8 +71,9 @@ export function Sidebar({ shell, selected, onSelect, onHide }: Props) {
 function ProjectItem({
   project,
   selected,
+  seen,
   onSelect,
-}: { project: Project } & Pick<Props, "selected" | "onSelect">) {
+}: { project: Project; seen: Record<string, string> } & Pick<Props, "selected" | "onSelect">) {
   const [open, setOpen] = useStored(`rigapp.projectOpen.${project.id}`, true);
   const seatCount = project.pods.reduce((n, pod) => n + pod.seats.length, 0);
   const Chevron = open ? ChevronDown : ChevronRight;
@@ -82,6 +109,9 @@ function ProjectItem({
                   <StatusDot tone={state.tone} />
                   <span>{seat.member}</span>
                   {project.lead === seat.session && <span className="text-xs text-acc">lead</span>}
+                  {seat.kind === "agent" && selected !== seat.session && isUnread(seat, seen) && (
+                    <span className="size-1.5 rounded-full bg-ink" aria-label="new activity" />
+                  )}
                   <span className="ml-auto text-xs text-ink3">{seat.harness}</span>
                 </button>
               );

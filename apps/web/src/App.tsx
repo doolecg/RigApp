@@ -2,10 +2,12 @@ import { ChevronRight, Menu, PanelLeft, PanelRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useConnection } from "@/lib/connection";
 import { seatState } from "@/lib/seat";
+import { initSeen, markSeen } from "@/lib/seen";
 import { useMedia, useStored } from "@/lib/ui";
 import { ApprovalCard } from "./components/chat/ApprovalCard";
 import { Chat } from "./components/chat/Chat";
 import { Composer } from "./components/chat/Composer";
+import { Overview } from "./components/Overview";
 import { SeatPanel } from "./components/SeatPanel";
 import { SetupScreen } from "./components/SetupScreen";
 import { Sidebar } from "./components/Sidebar";
@@ -15,8 +17,11 @@ import { Button } from "./components/ui/button";
 const SIDEBAR_WIDTH = 268;
 const clampWidth = (width: number) => Math.min(420, Math.max(220, width));
 
+export type View = "overview" | "seat";
+
 export function App() {
   const { connected, shell } = useConnection();
+  const [view, setView] = useStored<View>("rigapp.view", "seat");
   const [chosen, setChosen] = useStored<string | null>("rigapp.lastSeat", null);
   const [sidebarWidth, setSidebarWidth] = useStored("rigapp.sidebarWidth", SIDEBAR_WIDTH);
   const [sidebarOpen, setSidebarOpen] = useStored("rigapp.sidebarOpen", true);
@@ -27,6 +32,23 @@ export function App() {
   const roomy = useMedia("(min-width: 1280px)");
   const [drawer, setDrawer] = useState(false);
   const [overlay, setOverlay] = useState(false);
+
+  const projects = shell?.daemon.ok ? shell.projects : [];
+  const seats = projects.flatMap((project) => project.pods.flatMap((pod) => pod.seats.map((seat) => ({ project, seat }))));
+  // The last seat you opened, else the first project's lead.
+  const current =
+    seats.find((s) => s.seat.session === chosen) ??
+    seats.find((s) => s.seat.session === projects[0]?.lead) ??
+    seats[0];
+  const viewing = view === "seat" ? current?.seat : undefined;
+
+  useEffect(() => {
+    if (shell?.daemon.ok) initSeen(shell);
+  }, [shell]);
+  // While a thread is open, everything it shows counts as seen.
+  useEffect(() => {
+    if (viewing) markSeen(viewing.session);
+  }, [viewing?.session, viewing?.lastActivityAt]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -47,25 +69,29 @@ export function App() {
   }
   if (!shell.daemon.ok) return <SetupScreen shell={shell} />;
 
-  const seats = shell.projects.flatMap((project) =>
-    project.pods.flatMap((pod) => pod.seats.map((seat) => ({ project, seat }))),
-  );
-  // The last seat you opened, else the first project's lead.
-  const current =
-    seats.find((s) => s.seat.session === chosen) ??
-    seats.find((s) => s.seat.session === shell.projects[0]?.lead) ??
-    seats[0];
   const select = (session: string) => {
     setChosen(session);
+    setView("seat");
+    setDrawer(false);
+  };
+  const openOverview = () => {
+    setView("overview");
     setDrawer(false);
   };
 
   const showSidebar = wide && sidebarOpen;
-  const showPanel = roomy ? panelOpen : overlay;
+  const showPanel = view === "seat" && (roomy ? panelOpen : overlay);
   const toggleSidebar = () => (wide ? setSidebarOpen(!sidebarOpen) : setDrawer(!drawer));
   const togglePanel = () => (roomy ? setPanelOpen(!panelOpen) : setOverlay(!overlay));
   const sidebar = (
-    <Sidebar shell={shell} selected={current?.seat.session ?? null} onSelect={select} onHide={toggleSidebar} />
+    <Sidebar
+      shell={shell}
+      view={view}
+      selected={current?.seat.session ?? null}
+      onSelect={select}
+      onOverview={openOverview}
+      onHide={toggleSidebar}
+    />
   );
 
   return (
@@ -77,39 +103,45 @@ export function App() {
         </div>
       )}
       <main className="flex min-w-0 flex-1 flex-col bg-g1">
-        <header className="flex items-center gap-2 px-3 py-2.5">
+        <header className="flex min-h-12 items-center gap-2 px-3 py-2.5">
           {!showSidebar && (
             <Button variant="ghost" size="icon" aria-label="Show sidebar" onClick={toggleSidebar}>
               {wide ? <PanelLeft /> : <Menu />}
             </Button>
           )}
-          {current && (
-            <>
-              <span className="hidden text-ink2 sm:inline">{current.project.name}</span>
-              <ChevronRight className="hidden size-3.5 text-ink3 sm:inline" />
-              <StatusDot tone={seatState(current.seat).tone} className="sm:hidden" />
-              <span className="truncate font-semibold">{current.seat.logicalId}</span>
-              <span className="hidden rounded bg-g3 px-1.5 py-0.5 text-xs text-ink2 sm:inline">
-                {current.seat.harness}
-              </span>
-              <span className="hidden items-center gap-1.5 text-xs text-ink2 sm:inline-flex">
-                <StatusDot tone={seatState(current.seat).tone} />
-                {seatState(current.seat).label}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="ml-auto"
-                aria-label={showPanel ? "Hide details" : "Show details"}
-                aria-pressed={showPanel}
-                onClick={togglePanel}
-              >
-                <PanelRight />
-              </Button>
-            </>
+          {view === "overview" ? (
+            <span className="font-semibold">Overview</span>
+          ) : (
+            current && (
+              <>
+                <span className="hidden text-ink2 sm:inline">{current.project.name}</span>
+                <ChevronRight className="hidden size-3.5 text-ink3 sm:inline" />
+                <StatusDot tone={seatState(current.seat).tone} className="sm:hidden" />
+                <span className="truncate font-semibold">{current.seat.logicalId}</span>
+                <span className="hidden rounded bg-g3 px-1.5 py-0.5 text-xs text-ink2 sm:inline">
+                  {current.seat.harness}
+                </span>
+                <span className="hidden items-center gap-1.5 text-xs text-ink2 sm:inline-flex">
+                  <StatusDot tone={seatState(current.seat).tone} />
+                  {seatState(current.seat).label}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="ml-auto"
+                  aria-label={showPanel ? "Hide details" : "Show details"}
+                  aria-pressed={showPanel}
+                  onClick={togglePanel}
+                >
+                  <PanelRight />
+                </Button>
+              </>
+            )
           )}
         </header>
-        {current ? (
+        {view === "overview" ? (
+          <Overview shell={shell} onOpen={select} />
+        ) : current ? (
           <>
             <Chat key={current.seat.session} seat={current.seat} />
             {current.seat.activity === "needs_input" && (

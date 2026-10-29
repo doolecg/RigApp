@@ -8,6 +8,7 @@ import { pressKey, sendText } from "./actions.ts";
 import { Chats } from "./chat/chats.ts";
 import { listFiles, readText } from "./files.ts";
 import { Hub } from "./hub.ts";
+import { Terminals } from "./terminal.ts";
 
 const PORT = Number(process.env.RIGAPP_PORT ?? 7480);
 // The Vite dev server proxies /ws here during `pnpm dev`.
@@ -55,15 +56,21 @@ const wss = new WebSocketServer({
 
 const hub = new Hub();
 const chats = new Chats(hub);
+const terminals = new Terminals(
+  () => hub.url,
+  () => hub.wslDistro,
+);
 
 wss.on("connection", (socket) => {
   const send = (message: ServerMessage) => socket.send(JSON.stringify(message));
   const threads = new Set<string>();
+  const terms = new Set<string>();
   send(hub.message());
   hub.listeners.add(send);
   socket.on("close", () => {
     hub.listeners.delete(send);
     for (const session of threads) chats.unsubscribe(session, send);
+    for (const session of terms) terminals.unsubscribe(session, send);
   });
   socket.on("message", async (data) => {
     const request = JSON.parse(String(data)) as ClientMessage;
@@ -79,6 +86,17 @@ wss.on("connection", (socket) => {
         threads.delete(request.session);
         chats.unsubscribe(request.session, send);
         break;
+      case "term.subscribe":
+        terms.add(request.session);
+        terminals.subscribe(request.session, send);
+        break;
+      case "term.unsubscribe":
+        terms.delete(request.session);
+        terminals.unsubscribe(request.session, send);
+        break;
+      case "term.input":
+        send({ type: "result", id: request.id, ...(await terminals.input(request.session, request.data)) });
+        return;
       case "files.list":
       case "files.read": {
         const seat = hub.findSeat(request.session);

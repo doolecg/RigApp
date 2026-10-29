@@ -73,5 +73,10 @@ export function buildProject(ps: PsEntry, rig: RigDetail, nodes: NodeEntry[]): P
     lead: pickLead(rig, nodes),
     human: nodes.find((n) => n.runtime === "terminal")?.canonicalSessionName ?? null,
     pods,
+    edges: rig.edges.flatMap((e) => {
+      const from = nodes.find((n) => n.nodeId === e.sourceId)?.canonicalSessionName;
+      const to = nodes.find((n) => n.nodeId === e.targetId)?.canonicalSessionName;
+      return from && to ? [{ from, to, kind: e.kind }] : [];
+    }),
   };
 }

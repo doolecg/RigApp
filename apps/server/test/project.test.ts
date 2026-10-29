@@ -35,6 +35,13 @@ describe("buildProject", () => {
     expect(seats.find((s) => s.logicalId === "operator.human")!.harness).toBe("Terminal");
   });
 
+  it("names each edge by its seats' sessions", () => {
+    const { ps, detail, nodes } = rig("kernel");
+    const edges = buildProject(ps, detail, nodes).edges;
+    expect(edges).toContainEqual({ from: "advisor-lead@kernel", to: "operator-agent@kernel", kind: "delegates_to" });
+    expect(edges.length).toBe(detail.edges.length);
+  });
+
   it("reads a stopped rig", () => {
     const { ps, detail, nodes } = rig("starter");
     const project = buildProject(ps, detail, nodes);

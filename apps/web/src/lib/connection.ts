@@ -21,6 +21,9 @@ const listeners = new Set<() => void>();
 const pending = new Map<number, (message: Extract<ServerMessage, { type: "result" }>) => void>();
 /** Threads some view is showing, with how many views show each. */
 const watched = new Map<string, number>();
+type TermMessage = Extract<ServerMessage, { type: "term" }>;
+/** Terminal views, by seat. Terminal output is streamed to them, not kept in state. */
+const terminals = new Map<string, Set<(message: TermMessage) => void>>();
 // Omit each member of the union separately, so `session` stays allowed.
 type Outgoing<T = ClientMessage> = T extends unknown ? Omit<T, "id"> : never;
 
@@ -57,11 +60,13 @@ function connect() {
   socket = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`);
   socket.onopen = () => {
     for (const session of watched.keys()) send({ method: "thread.subscribe", session });
+    for (const session of terminals.keys()) send({ method: "term.subscribe", session });
   };
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data) as ServerMessage;
     if (message.type === "shell") set({ connected: true, shell: message.shell });
     else if (message.type === "thread") applyThread(message);
+    else if (message.type === "term") for (const listener of terminals.get(message.session) ?? []) listener(message);
     else {
       pending.get(message.id)?.(message);
       pending.delete(message.id);
@@ -93,6 +98,23 @@ export function request(message: Outgoing): Promise<Result> {
     return Promise.resolve({ type: "result", id: 0, ok: false, error: "Not connected to the RigApp server." });
   }
   return new Promise((resolve) => pending.set(send(message), resolve));
+}
+
+/** Follows a seat's terminal; call the returned function to stop. */
+export function onTerm(session: string, listener: (message: TermMessage) => void): () => void {
+  let set = terminals.get(session);
+  if (!set) {
+    set = new Set();
+    terminals.set(session, set);
+    send({ method: "term.subscribe", session });
+  }
+  set.add(listener);
+  return () => {
+    set.delete(listener);
+    if (set.size) return;
+    terminals.delete(session);
+    send({ method: "term.unsubscribe", session });
+  };
 }
 
 /** Starts following a seat's chat; call the returned function to stop. */

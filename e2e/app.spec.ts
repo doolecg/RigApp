@@ -89,3 +89,26 @@ test("sends a message and the reply streams in", async ({ page }) => {
   await box.press("Enter");
   await expect(page.locator(".md", { hasText: word })).toBeVisible({ timeout: 90_000 });
 });
+
+test("the graph shows the rig's pods and seats, and a click opens a seat", async ({ page }) => {
+  await open(page);
+  await seatButton(page, "lead").click();
+  await page.getByRole("tab", { name: "Graph" }).click();
+  const seats = page.locator(".react-flow__node-seat");
+  await expect(seats).toHaveCount(4);
+  for (const pod of ["Advisor", "Operator", "Queue"]) await expect(page.locator(".react-flow__node-pod", { hasText: pod })).toBeVisible();
+  await seats.filter({ hasText: "queue.worker" }).click();
+  await expect(page.locator("header")).toContainText("queue.worker");
+  await expect(page.getByRole("tab", { name: "Chat" })).toHaveAttribute("aria-selected", "true");
+});
+
+test("the terminal shows the seat's pane and asks before taking control", async ({ page }) => {
+  await open(page);
+  await seatButton(page, "lead").click();
+  await page.getByRole("tab", { name: "Terminal" }).click();
+  await expect(page.locator(".xterm-rows")).toContainText("advisor-lead@kernel", { timeout: 10_000 });
+  await page.getByRole("button", { name: "Take control" }).click();
+  await expect(page.getByText("Take control of advisor.lead's terminal?")).toBeVisible();
+  await page.getByRole("button", { name: "Cancel" }).click();
+  await expect(page.getByText("Take control of advisor.lead's terminal?")).toBeHidden();
+});

@@ -1,29 +1,40 @@
-import { ChevronRight, Menu, PanelLeft, PanelRight } from "lucide-react";
+import { ChevronRight, Menu, MessageSquare, Network, PanelLeft, PanelRight, SquareTerminal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useConnection } from "@/lib/connection";
 import { seatState } from "@/lib/seat";
 import { initSeen, markSeen } from "@/lib/seen";
 import { useMedia, useStored } from "@/lib/ui";
+import { cn } from "@/lib/utils";
 import { ApprovalCard } from "./components/chat/ApprovalCard";
 import { Chat } from "./components/chat/Chat";
 import { Composer } from "./components/chat/Composer";
+import { GraphView } from "./components/GraphView";
 import { Overview } from "./components/Overview";
 import { Palette } from "./components/Palette";
 import { SeatPanel } from "./components/SeatPanel";
 import { SetupScreen } from "./components/SetupScreen";
 import { Sidebar } from "./components/Sidebar";
 import { StatusDot } from "./components/StatusDot";
+import { TerminalView } from "./components/TerminalView";
 import { Button } from "./components/ui/button";
 
 const SIDEBAR_WIDTH = 268;
 const clampWidth = (width: number) => Math.min(420, Math.max(220, width));
 
 export type View = "overview" | "seat";
+type Tab = "chat" | "graph" | "terminal";
+
+const TABS: { id: Tab; label: string; icon: typeof MessageSquare }[] = [
+  { id: "chat", label: "Chat", icon: MessageSquare },
+  { id: "graph", label: "Graph", icon: Network },
+  { id: "terminal", label: "Terminal", icon: SquareTerminal },
+];
 
 export function App() {
   const { connected, shell } = useConnection();
   const [view, setView] = useStored<View>("rigapp.view", "seat");
   const [chosen, setChosen] = useStored<string | null>("rigapp.lastSeat", null);
+  const [tab, setTab] = useStored<Tab>("rigapp.tab", "chat");
   const [sidebarWidth, setSidebarWidth] = useStored("rigapp.sidebarWidth", SIDEBAR_WIDTH);
   const [sidebarOpen, setSidebarOpen] = useStored("rigapp.sidebarOpen", true);
   const [panelOpen, setPanelOpen] = useStored("rigapp.panelOpen", true);
@@ -133,6 +144,23 @@ export function App() {
                   <StatusDot tone={seatState(current.seat).tone} />
                   {seatState(current.seat).label}
                 </span>
+                <nav className="ml-2 flex items-center gap-0.5 rounded-lg bg-g0 p-0.5" role="tablist" aria-label="Thread views">
+                  {TABS.map(({ id, label, icon: Icon }) => (
+                    <button
+                      key={id}
+                      role="tab"
+                      aria-selected={tab === id}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-ink2 hover:text-ink",
+                        tab === id && "bg-g3 text-ink",
+                      )}
+                      onClick={() => setTab(id)}
+                    >
+                      <Icon className="size-3.5" />
+                      <span className="hidden md:inline">{label}</span>
+                    </button>
+                  ))}
+                </nav>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -149,6 +177,16 @@ export function App() {
         </header>
         {view === "overview" ? (
           <Overview shell={shell} onOpen={select} />
+        ) : current && tab === "graph" ? (
+          <GraphView
+            project={current.project}
+            onOpen={(session) => {
+              select(session);
+              setTab("chat");
+            }}
+          />
+        ) : current && tab === "terminal" ? (
+          <TerminalView key={current.seat.session} seat={current.seat} />
         ) : current ? (
           <>
             <Chat key={current.seat.session} seat={current.seat} />

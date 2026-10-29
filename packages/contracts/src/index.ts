@@ -73,6 +73,14 @@ export interface Project {
   /** The rig's terminal seat: messages from RigApp are signed as this seat, the human. */
   human: string | null;
   pods: Pod[];
+  /** Links between seats, by session name, e.g. `delegates_to`. */
+  edges: Edge[];
+}
+
+export interface Edge {
+  from: string;
+  to: string;
+  kind: string;
 }
 
 export interface DaemonInfo {
@@ -110,6 +118,11 @@ export type ServerMessage =
       /** Why there is no chat for this seat, when there is none. */
       unavailable?: string;
     }
+  /**
+   * A seat's terminal. `live`: raw output from the daemon's terminal socket, to append.
+   * `preview`: the whole pane as text, re-read every few seconds, to replace. `ended`: the socket closed.
+   */
+  | { type: "term"; session: string; mode: "live" | "preview" | "ended"; data?: string; screen?: string }
   /** `reason` is the daemon's refusal code when it refused a send. */
   | { type: "result"; id: number; ok: boolean; error?: string; reason?: string; files?: FileEntry[]; text?: string };
 
@@ -121,4 +134,7 @@ export type ClientMessage =
   | { id: number; method: "seat.send"; session: string; text: string; force?: boolean }
   | { id: number; method: "seat.key"; session: string; key: "approve" | "deny" | "stop" }
   /** Read-only look at the seat's folder; `path` is relative to it ("" is the folder itself). */
-  | { id: number; method: "files.list" | "files.read"; session: string; path: string };
+  | { id: number; method: "files.list" | "files.read"; session: string; path: string }
+  | { id: number; method: "term.subscribe" | "term.unsubscribe"; session: string }
+  /** Keys typed in the terminal while you have taken control, as xterm reports them. */
+  | { id: number; method: "term.input"; session: string; data: string };

@@ -56,7 +56,7 @@ test("the composer picks another seat with @ and lists actions with /", async ({
 test("Ctrl+K finds a seat and opens it", async ({ page }) => {
   await open(page);
   await page.keyboard.press("Control+k");
-  await page.getByPlaceholder("Type a seat or an action").fill("review");
+  await page.getByPlaceholder(/Type a seat/).fill("review");
   await page.keyboard.press("Enter");
   await expect(page.locator("header")).toContainText("dev.review");
 });
@@ -111,4 +111,44 @@ test("the terminal shows the seat's pane and asks before taking control", async 
   await expect(page.getByText("Take control of advisor.lead's terminal?")).toBeVisible();
   await page.getByRole("button", { name: "Cancel" }).click();
   await expect(page.getByText("Take control of advisor.lead's terminal?")).toBeHidden();
+});
+
+test("the Specs tab loads the rig's files and OpenRig validates the spec", async ({ page }) => {
+  await open(page);
+  await seatButton(page, "build").click();
+  await page.getByRole("tab", { name: "Specs" }).click();
+  await expect(page.getByRole("tab", { name: "CULTURE.md" })).toBeVisible();
+  await page.getByRole("button", { name: "Validate" }).click();
+  await expect(page.getByText("OpenRig says this spec is valid.")).toBeVisible();
+  await seatButton(page, "lead").click();
+  await expect(page.getByText(/outside OpenRig's files roots/)).toBeVisible();
+});
+
+test("the Rig tab shows usage, snapshots and a plan before Rig up", async ({ page }) => {
+  await open(page);
+  await seatButton(page, "build").click();
+  await page.getByRole("tab", { name: "Rig" }).click();
+  await expect(page.getByText(/Claude, (5-hour window|weekly)/).first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Restore" }).first()).toBeAttached();
+  await page.getByRole("button", { name: "Rig up" }).click();
+  await expect(page.getByText("OpenRig's plan", { exact: false })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("dialog").getByText("dev.build")).toBeVisible();
+  await page.getByRole("button", { name: "Cancel" }).click();
+});
+
+test("Ctrl+K also finds words in seat logs", async ({ page }) => {
+  await open(page);
+  await page.keyboard.press("Control+k");
+  await page.getByPlaceholder(/Type a seat/).fill("RigApp test");
+  await expect(page.getByText("In seat logs")).toBeVisible({ timeout: 10_000 });
+});
+
+test("New project checks a library spec with OpenRig before starting", async ({ page }) => {
+  await open(page);
+  await page.getByRole("button", { name: "New project" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: /^starter/ }).click();
+  await page.getByLabel(/Project folder/).fill("E:\REPOS\AI TOOLS\RigApp");
+  await page.getByRole("button", { name: "Check with OpenRig" }).click();
+  await expect(page.getByText("OpenRig can start it.", { exact: false })).toBeVisible({ timeout: 20_000 });
+  await page.getByRole("button", { name: "Cancel" }).click();
 });

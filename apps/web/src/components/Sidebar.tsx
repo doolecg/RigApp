@@ -1,4 +1,5 @@
-import { ChevronDown, ChevronRight, LayoutGrid, PanelLeft, Search } from "lucide-react";
+import { ChevronDown, ChevronRight, LayoutGrid, PanelLeft, Plus, Search } from "lucide-react";
+import { useState } from "react";
 import type { Project, Shell } from "@rigapp/contracts";
 import type { View } from "@/App";
 import { entries, needsYou } from "@/lib/attention";
@@ -6,6 +7,7 @@ import { seatState, title } from "@/lib/seat";
 import { isUnread, useSeen } from "@/lib/seen";
 import { useStored } from "@/lib/ui";
 import { cn } from "@/lib/utils";
+import { NewProject } from "./NewProject";
 import { StatusDot } from "./StatusDot";
 import { Button } from "./ui/button";
 
@@ -23,6 +25,7 @@ export function Sidebar({ shell, view, selected, onSelect, onOverview, onSearch,
   const { daemon } = shell;
   const seen = useSeen();
   const count = needsYou(entries(shell, seen));
+  const [creating, setCreating] = useState(false);
   return (
     <aside className="flex h-full min-h-0 flex-col bg-g0">
       <div className="px-4 pt-4 pb-3">
@@ -60,6 +63,11 @@ export function Sidebar({ shell, view, selected, onSelect, onOverview, onSearch,
           Overview
           {count > 0 && <span className="ml-auto text-xs text-warn">{count}</span>}
         </button>
+        <button className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-g2" onClick={() => setCreating(true)}>
+          <Plus className="size-3.5 text-ink2" />
+          New project
+        </button>
+        {creating && <NewProject shell={shell} onClose={() => setCreating(false)} />}
       </div>
       <div className="px-4 pt-4 pb-1 text-xs text-ink3">Projects</div>
       <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-4">

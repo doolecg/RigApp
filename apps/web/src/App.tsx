@@ -1,4 +1,4 @@
-import { ChevronRight, Menu, MessageSquare, Network, PanelLeft, PanelRight, SquareTerminal } from "lucide-react";
+import { ChevronRight, FileCode, Menu, MessageSquare, Network, PanelLeft, PanelRight, SquareTerminal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useConnection } from "@/lib/connection";
 import { seatState } from "@/lib/seat";
@@ -13,6 +13,7 @@ import { Overview } from "./components/Overview";
 import { Palette } from "./components/Palette";
 import { SeatPanel } from "./components/SeatPanel";
 import { SetupScreen } from "./components/SetupScreen";
+import { SpecsView } from "./components/SpecsView";
 import { Sidebar } from "./components/Sidebar";
 import { StatusDot } from "./components/StatusDot";
 import { TerminalView } from "./components/TerminalView";
@@ -22,12 +23,13 @@ const SIDEBAR_WIDTH = 268;
 const clampWidth = (width: number) => Math.min(420, Math.max(220, width));
 
 export type View = "overview" | "seat";
-type Tab = "chat" | "graph" | "terminal";
+type Tab = "chat" | "graph" | "terminal" | "specs";
 
 const TABS: { id: Tab; label: string; icon: typeof MessageSquare }[] = [
   { id: "chat", label: "Chat", icon: MessageSquare },
   { id: "graph", label: "Graph", icon: Network },
   { id: "terminal", label: "Terminal", icon: SquareTerminal },
+  { id: "specs", label: "Specs", icon: FileCode },
 ];
 
 export function App() {
@@ -185,6 +187,8 @@ export function App() {
               setTab("chat");
             }}
           />
+        ) : current && tab === "specs" ? (
+          <SpecsView key={current.project.id} project={current.project} />
         ) : current && tab === "terminal" ? (
           <TerminalView key={current.seat.session} seat={current.seat} />
         ) : current ? (

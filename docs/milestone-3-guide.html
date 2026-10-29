@@ -54,14 +54,14 @@
 
 <main>
 <h1>Milestone 3 "Specs and lifecycle"</h1>
-<p class="status">State: Planned (proposed 2026-10-29, not approved)</p>
+<p class="status">State: Built 2026-10-29, waiting for your review (section 4)</p>
 
 <div class="box first">
   <strong>Read this first</strong>
   <ul>
     <li>Goal: Create and edit rigs from RigApp and control their whole life: up, down, snapshots, restore, adopt, bundles.</li>
     <li>Out of scope: Seat tools (M5).</li>
-    <li>Nothing here starts until you approve this guide.</li>
+    <li>Started 2026-10-29 under your "keep going" instruction, with Claude's recommendation: CodeMirror 6.</li>
     <li>To change anything, write in the notes box under it, press Copy my notes, and paste to Claude.</li>
   </ul>
 </div>
@@ -69,11 +69,11 @@
 <h2>1. Parts</h2>
 <div class="box">
   <ul class="check">
-    <li><strong>Spec editor:</strong> RigSpec, AgentSpec and CULTURE.md with validation by OpenRig's own validators (<code>/api/rigs/import/validate</code>, <code>/api/agents/validate</code>) and a diff before saving. Saves by export, edit, re-import (stopgap, gap 5).</li>
-    <li><strong>Lifecycle:</strong> New project in the sidebar (start a rig from a spec, moved from M1 on 2026-10-29), rig up and down, snapshot and restore, adopt tmux sessions, import and export bundles. A confirm before anything destructive.</li>
-    <li><strong>Snapshot timeline:</strong> the rig's snapshots (every 5 minutes on kernel) on a timeline with one-click restore.</li>
-    <li><strong>Usage:</strong> each seat's context use and the Claude 5-hour and weekly windows from <code>/api/provider/usage</code>.</li>
-    <li><strong>Search:</strong> Ctrl+K searches every seat's log through <code>/api/transcripts/:session/grep</code>.</li>
+    <li class="ticked"><strong>Spec editor:</strong> (RigSpec and CULTURE.md; AgentSpec editing parked, see the bible idea map) RigSpec, AgentSpec and CULTURE.md with validation by OpenRig's own validators (<code>/api/rigs/import/validate</code>, <code>/api/agents/validate</code>) and a diff before saving. Saves by export, edit, re-import (stopgap, gap 5).</li>
+    <li class="ticked"><strong>Lifecycle:</strong> (New project, rig up and down, snapshot and restore are built; adopting tmux sessions and bundles are parked in the bible idea map) New project in the sidebar (start a rig from a spec, moved from M1 on 2026-10-29), rig up and down, snapshot and restore, adopt tmux sessions, import and export bundles. A confirm before anything destructive.</li>
+    <li class="ticked"><strong>Snapshot timeline:</strong> the rig's snapshots (every 5 minutes on kernel) on a timeline with one-click restore.</li>
+    <li class="ticked"><strong>Usage:</strong> each seat's context use and the Claude 5-hour and weekly windows from <code>/api/provider/usage</code>.</li>
+    <li class="ticked"><strong>Search:</strong> Ctrl+K searches every seat's log through <code>/api/transcripts/:session/grep</code>.</li>
   </ul>
   <div class="notes" data-key="parts"><label>Your notes on the parts</label><textarea></textarea></div>
 </div>
@@ -88,7 +88,25 @@
 
 <h2>3. How to test each step</h2>
 <div class="box">
-  <p class="why">Added as each step is built.</p>
+  <h3 style="margin-top:0">Step: Specs</h3>
+  <ol>
+    <li>Run <code>&amp; "E:\REPOS\AI TOOLS\RigApp\tools\dev.ps1"</code> and open <code>http://localhost:7481</code>.</li>
+    <li>Open <strong>build</strong> under starter and click <strong>Specs</strong>: rig.yaml and CULTURE.md open in an editor. Click <strong>Validate</strong>: OpenRig says the spec is valid.</li>
+    <li>Change a word, click <strong>Review changes</strong> to see the change in green and red, then <strong>Save</strong>. RigApp saves through OpenRig, which refuses if the file changed on disk in the meantime. The rig uses it the next time it starts.</li>
+    <li>Open <strong>lead</strong> under kernel: its spec is built into OpenRig, so it shows read-only, with the reason.</li>
+  </ol>
+  <h3>Step: Rig up and down, snapshots, usage</h3>
+  <ol>
+    <li>Open any seat, then the <strong>Rig</strong> tab in the right panel: the Claude weekly and 5-hour windows, each seat's context use, and the snapshot list.</li>
+    <li><strong>Rig up</strong> (on a stopped rig) first shows OpenRig's plan for each seat; nothing starts until you press Rig up in that box. <strong>Rig down</strong> asks first and offers a snapshot.</li>
+    <li>Hover a snapshot and press <strong>Restore</strong>: it explains what happens and asks first.</li>
+  </ol>
+  <h3>Step: New project and search</h3>
+  <ol>
+    <li>Click <strong>New project</strong> in the sidebar, pick a team, type a folder (a Windows path like <code>E:\REPOS\MyApp</code> works) and press <strong>Check with OpenRig</strong>. Start project is only possible after OpenRig says it can start it.</li>
+    <li>Press Ctrl+K and type three or more letters that appear in a seat's screen: matches show under "In seat logs". OpenRig matches them exactly, capitals included.</li>
+    <li>Tests: <code>pnpm test:e2e</code> includes all of the above except actually starting, stopping or restoring a rig.</li>
+  </ol>
 </div>
 
 <h2>4. Review checklist (about 30 minutes)</h2>

@@ -56,6 +56,50 @@ export interface FileEntry {
   size: number;
 }
 
+/** A rig's spec or culture file in the Specs tab. Editable files carry what OpenRig needs to save them safely. */
+export interface SpecFile {
+  name: "rig.yaml" | "CULTURE.md";
+  content: string;
+  editable: boolean;
+  /** Why it is read-only, when it is. */
+  reason?: string;
+  root?: string;
+  path?: string;
+  mtime?: string;
+  hash?: string;
+}
+
+export interface SnapshotInfo {
+  id: string;
+  kind: string;
+  status: string;
+  createdAt: string;
+}
+
+/** One account usage window, e.g. Claude's five-hour or weekly limit. */
+export interface UsageWindow {
+  provider: string;
+  window: string;
+  usedPercent: number;
+  resetsAt: string;
+  asOf: string;
+}
+
+export interface SearchHit {
+  session: string;
+  logicalId: string;
+  line: string;
+}
+
+/** A rig spec OpenRig ships or knows about, to start a new project from. */
+export interface LibrarySpec {
+  id: string;
+  name: string;
+  version: string;
+  summary: string;
+  sourcePath: string;
+}
+
 export interface Pod {
   name: string;
   seats: Seat[];
@@ -124,7 +168,17 @@ export type ServerMessage =
    */
   | { type: "term"; session: string; mode: "live" | "preview" | "ended"; data?: string; screen?: string }
   /** `reason` is the daemon's refusal code when it refused a send. */
-  | { type: "result"; id: number; ok: boolean; error?: string; reason?: string; files?: FileEntry[]; text?: string };
+  | {
+      type: "result";
+      id: number;
+      ok: boolean;
+      error?: string;
+      reason?: string;
+      files?: FileEntry[];
+      text?: string;
+      /** The answer to a specs, rig, usage or search request (see each method). */
+      data?: unknown;
+    };
 
 /** UI to server. */
 export type ClientMessage =
@@ -137,4 +191,23 @@ export type ClientMessage =
   | { id: number; method: "files.list" | "files.read"; session: string; path: string }
   | { id: number; method: "term.subscribe" | "term.unsubscribe"; session: string }
   /** Keys typed in the terminal while you have taken control, as xterm reports them. */
-  | { id: number; method: "term.input"; session: string; data: string };
+  | { id: number; method: "term.input"; session: string; data: string }
+  /** Answers SpecFile[]. */
+  | { id: number; method: "specs.load"; rigId: string }
+  /** Answers { valid, errors } from OpenRig's RigSpec validator. */
+  | { id: number; method: "specs.validate"; content: string }
+  | { id: number; method: "specs.save"; rigId: string; root: string; path: string; content: string; mtime: string; hash: string }
+  /** `plan` only forecasts; without it the rig starts (its seats spend tokens). */
+  | { id: number; method: "rig.up"; rigId: string; plan: boolean }
+  | { id: number; method: "rig.down"; rigId: string; snapshot: boolean }
+  /** rig.snapshots answers SnapshotInfo[]; rig.snapshot takes one now. */
+  | { id: number; method: "rig.snapshots" | "rig.snapshot"; rigId: string }
+  | { id: number; method: "rig.restore"; rigId: string; snapshotId: string }
+  /** Answers LibrarySpec[] (rig specs only). */
+  | { id: number; method: "library" }
+  /** Starts a new rig from a spec path in a project folder (a Linux path); `plan` only forecasts. */
+  | { id: number; method: "up.spec"; sourceRef: string; plan: boolean; cwd: string; rigName: string }
+  /** Answers UsageWindow[]. */
+  | { id: number; method: "usage" }
+  /** Answers SearchHit[] from every seat's pane log. */
+  | { id: number; method: "search"; pattern: string };

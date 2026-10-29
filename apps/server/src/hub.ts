@@ -38,6 +38,14 @@ export class Hub {
     return this.distro;
   }
 
+  projects(): Project[] {
+    return this.shell.projects;
+  }
+
+  allSeats(): Seat[] {
+    return this.shell.projects.flatMap((p) => p.pods.flatMap((pod) => pod.seats));
+  }
+
   findSeat(session: string): Seat | undefined {
     return this.find(session)?.seat;
   }

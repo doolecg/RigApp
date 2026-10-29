@@ -5,6 +5,7 @@ import { seatState, title } from "@/lib/seat";
 import { useStored } from "@/lib/ui";
 import { cn } from "@/lib/utils";
 import { FilesView } from "./FilesView";
+import { RigPanel } from "./RigPanel";
 import { Button } from "./ui/button";
 import { StatusDot } from "./StatusDot";
 
@@ -19,7 +20,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 
 export function SeatPanel({ project, seat, onHide }: { project: Project; seat: Seat; onHide?: () => void }) {
   const state = seatState(seat);
-  const [tab, setTab] = useStored<"seat" | "files">("rigapp.panelTab", "seat");
+  const [tab, setTab] = useStored<"seat" | "files" | "rig">("rigapp.panelTab", "seat");
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     await navigator.clipboard.writeText(seat.attachCommand ?? "");
@@ -29,7 +30,7 @@ export function SeatPanel({ project, seat, onHide }: { project: Project; seat: S
   return (
     <aside className="h-full min-h-0 overflow-y-auto bg-g1 px-5 py-4">
       <div className="-mt-1 mb-3 flex items-center gap-1" role="tablist">
-        {(["seat", "files"] as const).map((id) => (
+        {(["seat", "files", "rig"] as const).map((id) => (
           <button
             key={id}
             role="tab"
@@ -37,7 +38,7 @@ export function SeatPanel({ project, seat, onHide }: { project: Project; seat: S
             className={cn("rounded-md px-2.5 py-1 text-ink2 hover:text-ink", tab === id && "bg-g3 text-ink")}
             onClick={() => setTab(id)}
           >
-            {id === "seat" ? "Seat" : "Files"}
+            {id === "seat" ? "Seat" : id === "files" ? "Files" : "Rig"}
           </button>
         ))}
         {onHide && (
@@ -48,6 +49,8 @@ export function SeatPanel({ project, seat, onHide }: { project: Project; seat: S
       </div>
       {tab === "files" ? (
         <FilesView key={seat.session} seat={seat} />
+      ) : tab === "rig" ? (
+        <RigPanel key={project.id} project={project} />
       ) : (
         <>
           <dl className="grid grid-cols-[96px_1fr] gap-x-3 gap-y-1.5">

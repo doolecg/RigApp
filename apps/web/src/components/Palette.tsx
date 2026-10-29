@@ -1,7 +1,7 @@
 import { Command } from "cmdk";
-import { Check, LayoutGrid, PanelLeft, PanelRight, RefreshCw, Square, X } from "lucide-react";
-import type { ReactNode } from "react";
-import type { Shell } from "@rigapp/contracts";
+import { Check, FileSearch, LayoutGrid, PanelLeft, PanelRight, RefreshCw, Square, X } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import type { SearchHit, Shell } from "@rigapp/contracts";
 import { request } from "@/lib/connection";
 import { seatState } from "@/lib/seat";
 import { StatusDot } from "./StatusDot";
@@ -39,6 +39,17 @@ export function Palette({
   onOpenChange: (open: boolean) => void;
   actions: PaletteActions;
 }) {
+  const [query, setQuery] = useState("");
+  const [hits, setHits] = useState<SearchHit[]>([]);
+  // Three letters or more also searches every seat's pane log, after a short pause in typing.
+  useEffect(() => {
+    setHits([]);
+    if (query.trim().length < 3) return;
+    const timer = setTimeout(() => {
+      void request({ method: "search", pattern: query.trim() }).then((r) => r.ok && setHits(r.data as SearchHit[]));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [query]);
   const run = (action: () => void) => {
     onOpenChange(false);
     action();
@@ -55,7 +66,9 @@ export function Palette({
       contentClassName="fixed top-[12vh] left-1/2 z-50 w-[min(600px,92vw)] -translate-x-1/2 overflow-hidden rounded-xl bg-g2"
     >
       <Command.Input
-        placeholder="Type a seat or an action"
+        value={query}
+        onValueChange={setQuery}
+        placeholder="Type a seat, an action, or words to find in seat logs"
         className="w-full bg-transparent px-4 py-3.5 text-sm text-ink outline-none placeholder:text-ink3"
       />
       <Command.List className="max-h-[60vh] overflow-y-auto px-1.5 pb-1.5">
@@ -96,6 +109,17 @@ export function Palette({
             </Item>
           ))}
         </Command.Group>
+        {hits.length > 0 && (
+          <Command.Group heading="In seat logs" className={heading}>
+            {hits.map((hit, i) => (
+              <Item key={`h-${i}`} value={`${query} ${hit.logicalId} ${hit.line} ${i}`} onSelect={() => run(() => actions.openSeat(hit.session))}>
+                <FileSearch />
+                <span className="shrink-0 text-ink2">{hit.logicalId}</span>
+                <span className="truncate font-mono text-xs">{hit.line}</span>
+              </Item>
+            ))}
+          </Command.Group>
+        )}
         <Command.Group heading="RigApp" className={heading}>
           <Item value="overview what needs you" onSelect={() => run(actions.openOverview)}>
             <LayoutGrid />

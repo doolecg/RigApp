@@ -155,14 +155,14 @@
 </div>
 
 <div class="box">
-  <div class="ms-head"><h3>Milestone 3 "Specs and lifecycle"</h3><span class="state">Planned</span></div>
+  <div class="ms-head"><h3>Milestone 3 "Specs and lifecycle"</h3><span class="state now">Built 2026-10-29, review open</span></div>
   <p class="why">Guide: <code>docs/milestone-3-guide.html</code></p>
   <ul class="check">
-    <li>Spec editor</li>
-    <li>Lifecycle</li>
-    <li>Snapshot timeline</li>
-    <li>Usage</li>
-    <li>Search</li>
+    <li class="ticked">Spec editor</li>
+    <li class="ticked">Lifecycle</li>
+    <li class="ticked">Snapshot timeline</li>
+    <li class="ticked">Usage</li>
+    <li class="ticked">Search</li>
   </ul>
   <div class="notes" data-key="m3"><label>Your notes on milestone 3</label><textarea></textarea></div>
 </div>
@@ -221,6 +221,10 @@
   <ul>
     <li>Pull requests to OpenRig for the missing routes: approvals, interrupt, spec update, structured messages. Opened only after doole OKs each one, once M1 shows which stopgaps hurt most. (from Claude, 2026-10-29)</li>
   </ul>
+  <h3>Lifecycle depth pass (after the M1 to M5 review)</h3>
+  <ul>
+    <li>Adopt running tmux sessions into a rig (<code>/api/discovery/*</code>), import and export bundles (<code>/api/bundles/*</code>), and editing AgentSpecs. Parked from M3 to keep it to what could be checked against the live daemon. (2026-10-29)</li>
+  </ul>
   <h3>When a Codex or Pi seat exists</h3>
   <ul>
     <li>Chat for Codex and Pi seats: parsers for their session files, built and tested against a real seat. (moved from M1 Chat, 2026-10-29)</li>
@@ -240,6 +244,7 @@
 <h2 id="s8">8. Change log</h2>
 <div class="box">
   <ul>
+    <li>2026-10-29: M3 built: Specs tab (CodeMirror 6, OpenRig validation, diff, save through /api/files/write signed as the rig's human), Rig tab (rig up with OpenRig's plan first, rig down with snapshot, snapshot list with restore, Claude usage windows and seat context), New project from OpenRig's spec library, log search in Ctrl+K. Adopt, bundles and AgentSpec editing parked.</li>
     <li>2026-10-29: M2 built: Graph tab (pods in rows by delegation, links routed and merged), Terminal tab (daemon socket when on, else a 3 s pane copy), Take control with a warning, Operant's xterm options. Added @xyflow/react, @xterm/xterm, @xterm/addon-fit.</li>
     <li>2026-10-29: M1 built: chat, composer, approvals and Stop, Overview with unread markers, Ctrl+K, Files tab, README and LICENSE, Vitest and Playwright tests. apps/desktop moved to M4; Codex and Pi chat parked until a real seat exists. Review open.</li>
     <li>2026-10-29: M1 layout built. New project moved to M3 (it starts a rig from a spec); the Files tab moved into M1 Chat; the sidebar search box comes with the command palette.</li>

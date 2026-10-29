@@ -8,6 +8,7 @@ import { pressKey, sendText } from "./actions.ts";
 import { Chats } from "./chat/chats.ts";
 import { listFiles, readText } from "./files.ts";
 import { Hub } from "./hub.ts";
+import { lifecycle } from "./lifecycle.ts";
 import { Terminals } from "./terminal.ts";
 
 const PORT = Number(process.env.RIGAPP_PORT ?? 7480);
@@ -96,6 +97,20 @@ wss.on("connection", (socket) => {
         break;
       case "term.input":
         send({ type: "result", id: request.id, ...(await terminals.input(request.session, request.data)) });
+        return;
+      case "specs.load":
+      case "specs.validate":
+      case "specs.save":
+      case "rig.up":
+      case "rig.down":
+      case "rig.snapshots":
+      case "rig.snapshot":
+      case "rig.restore":
+      case "library":
+      case "up.spec":
+      case "usage":
+      case "search":
+        send({ type: "result", id: request.id, ...(await lifecycle(hub, request)) });
         return;
       case "files.list":
       case "files.read": {
